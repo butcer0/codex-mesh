@@ -1,0 +1,22 @@
+{
+  "record_type": "result_envelope",
+  "session_id": "7",
+  "address": "codex-implementation-1",
+  "role": "implementation",
+  "status": "completed",
+  "completed_at_unix": 1783278000,
+  "evidence": [],
+  "payload": {
+    "kind": "implementation",
+    "summary": "Missing task id.",
+    "changed_files": [],
+    "verification": [
+      {
+        "kind": "command",
+        "label": "verify",
+        "command": "./scripts/verify.sh",
+        "exit_code": 0
+      }
+    ]
+  }
+}

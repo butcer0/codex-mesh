@@ -1,0 +1,33 @@
+{
+  "record_type": "watch_snapshot",
+  "exposure": "live-watch",
+  "source": "fixture",
+  "generated_at_unix": 1783275600,
+  "idle_threshold_seconds": 30,
+  "include_detached": false,
+  "workspace_scan_depth": 1,
+  "beads_command": "bd list --status=open,in_progress,hooked --json",
+  "workspaces": [],
+  "summary": {
+    "total": 1,
+    "active": 0,
+    "quiet": 0,
+    "orphan": 0,
+    "detached": 0
+  },
+  "rows": [
+    {
+      "record_type": "watch_row",
+      "state": "thinking",
+      "session_id": "7",
+      "window_id": 7,
+      "address": "codex-implementation-1",
+      "task_id": "mesh-h9o.5",
+      "task_status": "in_progress",
+      "cwd": "/workspace/codex-mesh",
+      "transcript_exists": true,
+      "last_output_known": true,
+      "idle_seconds": 4
+    }
+  ]
+}

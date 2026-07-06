@@ -1,0 +1,33 @@
+{
+  "record_type": "install_doctor",
+  "scope": "codex-mesh",
+  "dependency_policy": "prerequisites-explicit",
+  "auto_install": false,
+  "install_command": "make install",
+  "doctor_command": "mesh doctor",
+  "runtime_ready": true,
+  "verification_ready": true,
+  "dependencies": [
+    {
+      "name": "bash",
+      "required_for": "runtime",
+      "status": "found",
+      "path": "/usr/bin/bash",
+      "purpose": "Run the command adapters and Makefile recipes."
+    },
+    {
+      "name": "kitty",
+      "required_for": "runtime",
+      "status": "found",
+      "path": "/usr/bin/kitty",
+      "purpose": "Own the live terminal transport and remote-control surface."
+    },
+    {
+      "name": "cue",
+      "required_for": "verification",
+      "status": "found",
+      "path": "/usr/bin/cue",
+      "purpose": "Verify CUE contracts and adversarial fixtures."
+    }
+  ]
+}

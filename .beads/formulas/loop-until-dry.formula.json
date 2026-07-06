@@ -1,0 +1,34 @@
+{
+  "formula": "loop-until-dry",
+  "description": "Repeat a convergence check until K consecutive dry rounds prove no more ready work.",
+  "version": 1,
+  "type": "workflow",
+  "phase": "vapor",
+  "steps": [
+    {
+      "id": "round",
+      "title": "loop: run one convergence round",
+      "description": "Run one bounded wave over the ready frontier.",
+      "type": "task",
+      "priority": 2,
+      "goal": {
+        "description": "Round emits a wave status record.",
+        "check": "cue vet wave-status.json model/contract.cue -d '#WaveStatus'"
+      },
+      "result_payload": "implementation"
+    },
+    {
+      "id": "dry-verdict",
+      "title": "judge: dry frontier verdict",
+      "description": "Decide whether the convergence predicate is satisfied.",
+      "type": "task",
+      "priority": 2,
+      "depends_on": ["round"],
+      "goal": {
+        "description": "Verdict proves the dry-round predicate.",
+        "check": "cue vet verdict.json model/contract.cue -d '#ResultEnvelope'"
+      },
+      "result_payload": "verdict"
+    }
+  ]
+}

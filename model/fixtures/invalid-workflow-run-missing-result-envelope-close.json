@@ -1,0 +1,32 @@
+{
+  "record_type": "workflow_step_state",
+  "formula_step": "closeout",
+  "title": "close: missing result envelope",
+  "status": "closed",
+  "placement": {
+    "repo_id": "codex-mesh",
+    "task_id": "mesh-dj8.1",
+    "role": "judge",
+    "cwd": "/workspace/codex-mesh",
+    "placement_key": "codex-mesh/mesh-dj8.1/judge/attempt-1",
+    "execution_mode": "read_only",
+    "isolation_mode": "shared_checkout",
+    "communication_channel": "none",
+    "reason": "closed step must still carry the result envelope",
+    "command_set": {
+      "side_effect_free": true,
+      "mutates_repo_state": false,
+      "mutates_beads_state": false,
+      "mutates_git_metadata": false
+    },
+    "beads": {
+      "task_claim_required": false,
+      "lifecycle_mutation": false,
+      "merge_slot_required": false
+    }
+  },
+  "expected_result_payload": "verdict",
+  "expected_result_envelope": true,
+  "close_policy": "green-predicate-and-result-envelope",
+  "predicate_status": "green"
+}

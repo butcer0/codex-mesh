@@ -1,0 +1,395 @@
+#!/usr/bin/env python3
+import argparse
+import hashlib
+import json
+import os
+import re
+import sys
+
+
+ADDR_RE = re.compile(r"^[a-z][a-z0-9-]{1,63}$")
+BEADS_ISSUE_RE = re.compile(r"^[a-z][a-z0-9]*-[a-z0-9]+(-[a-z0-9]+)*(\.[0-9]+)*$")
+FORMULA_RE = re.compile(r"^[a-z][a-z0-9-]{1,63}$")
+ROLE_RE = re.compile(r"^[a-z][a-z0-9-]{1,31}$")
+RUN_STATUSES = ("running", "blocked", "completed", "failed")
+FORBIDDEN_PUBLIC_FIELDS = ("remote_provider", "secret_ref", "credential", "private_origin")
+
+
+def die(message):
+    print(f"codex-mesh-workflow: {message}", file=sys.stderr)
+    sys.exit(2)
+
+
+def load_json(path, label):
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    except OSError as exc:
+        die(f"could not read {label} {path}: {exc}")
+    except json.JSONDecodeError as exc:
+        die(f"{label} {path} is not valid JSON: {exc}")
+
+
+def validate_string(value, regex, field):
+    if not isinstance(value, str) or not regex.match(value):
+        die(f"{field} is invalid")
+    return value
+
+
+def validate_abs_path(value, field):
+    if not isinstance(value, str) or not os.path.isabs(value):
+        die(f"{field} must be an absolute path")
+    return value
+
+
+def reject_forbidden(payload, path):
+    if isinstance(payload, dict):
+        for key in FORBIDDEN_PUBLIC_FIELDS:
+            if key in payload:
+                die(f"{path}.{key} is provider-specific and forbidden in public workflow requests")
+        for key, value in payload.items():
+            reject_forbidden(value, f"{path}.{key}")
+    elif isinstance(payload, list):
+        for index, value in enumerate(payload):
+            reject_forbidden(value, f"{path}[{index}]")
+
+
+def validate_request(payload):
+    if not isinstance(payload, dict):
+        die("request must be a JSON object")
+    reject_forbidden(payload, "request")
+    if payload.get("record_type") != "workflow_request":
+        die("request record_type must be workflow_request")
+
+    request = dict(payload)
+    validate_string(request.get("formula"), FORMULA_RE, "request.formula")
+    validate_string(request.get("parent_task"), BEADS_ISSUE_RE, "request.parent_task")
+    repo_id = request.get("repo_id")
+    if not isinstance(repo_id, str) or not repo_id:
+        die("request.repo_id must be a non-empty string")
+    validate_abs_path(request.get("workdir"), "request.workdir")
+    validate_string(request.get("role", "implementation"), ROLE_RE, "request.role")
+    validate_string(request.get("address_prefix"), ADDR_RE, "request.address_prefix")
+    max_steps = request.get("max_steps")
+    if not isinstance(max_steps, int) or max_steps <= 0:
+        die("request.max_steps must be a positive integer")
+    request["role"] = request.get("role", "implementation")
+    request["dry_run"] = bool(request.get("dry_run", True))
+    request["live_mutation"] = bool(request.get("live_mutation", False))
+    if request["dry_run"] is not True:
+        die("workflow runner currently requires request.dry_run=true")
+    if request["live_mutation"] is not False:
+        die("workflow runner currently requires request.live_mutation=false")
+
+    execution = request.get("default_execution_mode", "read_only")
+    isolation = request.get("default_isolation_mode", "shared_checkout")
+    if execution not in ("read_only", "mutating", "merge"):
+        die("request.default_execution_mode is invalid")
+    if isolation not in ("shared_checkout", "worktree", "main_owned"):
+        die("request.default_isolation_mode is invalid")
+    if execution == "mutating" and isolation == "shared_checkout":
+        die("mutating workflow requests must use worktree or main_owned isolation")
+    if execution == "merge" and isolation != "main_owned":
+        die("merge workflow requests require main_owned isolation")
+    if isolation == "worktree":
+        validate_abs_path(request.get("worktree_base"), "request.worktree_base")
+    request["default_execution_mode"] = execution
+    request["default_isolation_mode"] = isolation
+
+    envelopes = request.get("result_envelopes", [])
+    if envelopes is None:
+        envelopes = []
+    if not isinstance(envelopes, list):
+        die("request.result_envelopes must be an array")
+    request["result_envelopes"] = envelopes
+    return request
+
+
+def formula_path(request, args):
+    if args.formula_dir:
+        return os.path.join(args.formula_dir, f"{request['formula']}.formula.json")
+    return os.path.join(request["workdir"], ".beads", "formulas", f"{request['formula']}.formula.json")
+
+
+def validate_formula(payload, request):
+    if not isinstance(payload, dict):
+        die("formula must be a JSON object")
+    if payload.get("formula") != request["formula"]:
+        die("formula name does not match request.formula")
+    if payload.get("type") != "workflow":
+        die("formula.type must be workflow")
+    steps = payload.get("steps")
+    if not isinstance(steps, list) or not steps:
+        die("formula.steps must be a non-empty array")
+    seen = set()
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            die("formula steps must be objects")
+        step_id = validate_string(step.get("id"), FORMULA_RE, f"formula.steps[{index}].id")
+        if step_id in seen:
+            die(f"duplicate formula step id: {step_id}")
+        seen.add(step_id)
+        if not isinstance(step.get("title"), str) or not step["title"]:
+            die(f"formula step {step_id} title is required")
+        if step.get("result_payload") not in ("implementation", "review_findings", "verdict"):
+            die(f"formula step {step_id} result_payload is invalid")
+        depends_on = step.get("depends_on", [])
+        if depends_on is not None and not isinstance(depends_on, list):
+            die(f"formula step {step_id} depends_on must be an array")
+    return payload
+
+
+def address_for(prefix, task_id):
+    suffix = re.sub(r"[^a-z0-9-]+", "-", task_id.lower()).strip("-")
+    address = f"{prefix}-{suffix}"
+    if len(address) <= 64:
+        return address
+    digest = hashlib.sha1(task_id.encode("utf-8")).hexdigest()[:12]
+    budget = 64 - len(digest) - 1
+    return f"{address[:budget].rstrip('-')}-{digest}"
+
+
+def role_for_step(step, request):
+    payload = step.get("result_payload")
+    if payload == "review_findings":
+        return "reviewer"
+    if payload == "verdict":
+        return "judge"
+    return request["role"]
+
+
+def issue_for_step(parent_task, index):
+    return f"{parent_task}.{index + 1}"
+
+
+def envelope_by_task(request):
+    out = {}
+    for envelope in request["result_envelopes"]:
+        if isinstance(envelope, dict) and isinstance(envelope.get("task"), str):
+            out[envelope["task"]] = envelope
+    return out
+
+
+def execution_for_step(step, request):
+    wave = step.get("wave") if isinstance(step.get("wave"), dict) else {}
+    if wave.get("mutating") is True:
+        return "mutating"
+    return request["default_execution_mode"]
+
+
+def isolation_for_step(step, request, execution):
+    wave = step.get("wave") if isinstance(step.get("wave"), dict) else {}
+    wave_isolation = wave.get("isolation") if isinstance(wave.get("isolation"), dict) else {}
+    wave_mode = wave_isolation.get("mode")
+    if wave_mode == "worktree":
+        return "worktree"
+    if execution == "merge":
+        return "main_owned"
+    return request["default_isolation_mode"]
+
+
+def require_worktree_base(request):
+    return validate_abs_path(request.get("worktree_base"), "request.worktree_base")
+
+
+def placement_for_step(step, request, task_id, status):
+    role = role_for_step(step, request)
+    address = address_for(request["address_prefix"], task_id)
+    execution = execution_for_step(step, request)
+    isolation = isolation_for_step(step, request, execution)
+    if execution == "mutating" and isolation == "shared_checkout":
+        die(f"step {step['id']} mutates repo state but uses shared checkout")
+    if execution == "merge" and isolation != "main_owned":
+        die(f"step {step['id']} merge work requires main_owned isolation")
+
+    if isolation == "worktree":
+        worktree_base = require_worktree_base(request)
+        cwd = os.path.join(worktree_base.rstrip("/"), address)
+    else:
+        cwd = request["workdir"]
+
+    channel = "spawn" if status == "ready" else "none"
+    command_set = {
+        "side_effect_free": execution == "read_only",
+        "mutates_repo_state": execution != "read_only",
+        "mutates_beads_state": execution != "read_only",
+        "mutates_git_metadata": execution == "merge",
+    }
+    beads = {
+        "task_claim_required": execution != "read_only",
+        "lifecycle_mutation": execution != "read_only",
+        "merge_slot_required": execution == "merge" or isolation == "main_owned",
+    }
+    placement = {
+        "repo_id": request["repo_id"],
+        "task_id": task_id,
+        "role": role,
+        "cwd": cwd,
+        "placement_key": f"{request['repo_id']}/{task_id}/{role}/attempt-1",
+        "execution_mode": execution,
+        "isolation_mode": isolation,
+        "communication_channel": channel,
+        "reason": placement_reason(execution, isolation),
+        "command_set": command_set,
+        "beads": beads,
+    }
+    if isolation == "main_owned":
+        placement["main_checkout_jurisdiction"] = True
+    return placement
+
+
+def placement_reason(execution, isolation):
+    if execution == "read_only" and isolation == "shared_checkout":
+        return "read-only work can share the project checkout"
+    if execution == "mutating" and isolation == "worktree":
+        return "mutating same-repo work uses deterministic worktree isolation"
+    if isolation == "main_owned":
+        return "main checkout mutation is explicit and serialized by Beads coordination"
+    return "workflow placement is explicit before dispatch"
+
+
+def step_status(step, task_id, envelopes, closed_steps):
+    envelope = envelopes.get(task_id)
+    if envelope:
+        if envelope.get("status") == "completed":
+            return "closed"
+        if envelope.get("status") in ("failed", "blocked"):
+            return "failed"
+    dependencies = step.get("depends_on", []) or []
+    return "ready" if all(dep in closed_steps for dep in dependencies) else "blocked"
+
+
+def build_step(step, request, index, envelopes, closed_steps):
+    task_id = issue_for_step(request["parent_task"], index)
+    status = step_status(step, task_id, envelopes, closed_steps)
+    placement = placement_for_step(step, request, task_id, status)
+    state = {
+        "record_type": "workflow_step_state",
+        "formula_step": step["id"],
+        "title": step["title"],
+        "status": status,
+        "placement": placement,
+        "expected_result_payload": step["result_payload"],
+        "expected_result_envelope": True,
+        "close_policy": "green-predicate-and-result-envelope",
+    }
+    envelope = envelopes.get(task_id)
+    if status == "closed":
+        state["predicate_status"] = "green"
+        state["result"] = envelope
+        closed_steps.add(step["id"])
+    elif status == "failed":
+        state["result"] = envelope
+    return state
+
+
+def decision_for_step(state):
+    if state["status"] == "closed":
+        return {
+            "record_type": "runner_decision",
+            "step_id": state["formula_step"],
+            "action": "close",
+            "reason": "green predicate and result envelope allow close",
+            "visible_to_operator": True,
+            "communication_channel": "none",
+            "placement": dict(state["placement"], communication_channel="none"),
+            "predicate_status": "green",
+            "result": state["result"],
+        }
+    if state["status"] == "failed":
+        return {
+            "record_type": "runner_decision",
+            "step_id": state["formula_step"],
+            "action": "block",
+            "reason": "result envelope reports failed or blocked work",
+            "visible_to_operator": True,
+            "communication_channel": "none",
+            "placement": dict(state["placement"], communication_channel="none"),
+            "result": state.get("result"),
+        }
+    if state["status"] == "ready":
+        return {
+            "record_type": "runner_decision",
+            "step_id": state["formula_step"],
+            "action": "dispatch",
+            "reason": "step is ready and dispatch target is visible in the plan",
+            "visible_to_operator": True,
+            "communication_channel": "spawn",
+            "placement": state["placement"],
+        }
+    return {
+        "record_type": "runner_decision",
+        "step_id": state["formula_step"],
+        "action": "wait",
+        "reason": "step dependencies are not closed yet",
+        "visible_to_operator": True,
+        "communication_channel": "none",
+        "placement": dict(state["placement"], communication_channel="none"),
+    }
+
+
+def run_status(command, states):
+    if command == "plan":
+        return "planned"
+    if states and all(state["status"] == "closed" for state in states):
+        return "completed"
+    if any(state["status"] == "failed" for state in states):
+        return "failed"
+    if any(state["status"] == "ready" for state in states):
+        return "running"
+    return "blocked"
+
+
+def build_run(args):
+    request = validate_request(load_json(args.request_json, "request"))
+    formula = validate_formula(load_json(formula_path(request, args), "formula"), request)
+    envelopes = envelope_by_task(request)
+    closed_steps = set()
+    selected_steps = formula["steps"][: request["max_steps"]]
+    states = [build_step(step, request, index, envelopes, closed_steps) for index, step in enumerate(selected_steps)]
+    decisions = [decision_for_step(state) for state in states]
+    mode = args.command
+    status = run_status(mode, states)
+    run = {
+        "record_type": "workflow_run",
+        "command": "mesh workflow",
+        "mode": mode,
+        "run_id": args.run_id or f"{request['formula']}-{request['parent_task']}-{mode}",
+        "status": status,
+        "bounded": True,
+        "dry_run": True,
+        "live_mutation": False,
+        "request": request,
+        "max_steps": request["max_steps"],
+        "formula_run": {
+            "record_type": "formula_run",
+            "formula_name": request["formula"],
+            "parent_task": request["parent_task"],
+            "repo_id": request["repo_id"],
+            "workdir": request["workdir"],
+            "formula": formula,
+            "steps": states,
+        },
+        "decisions": decisions,
+    }
+    if request["result_envelopes"]:
+        run["formula_run"]["result_envelopes"] = request["result_envelopes"]
+    json.dump(run, sys.stdout, indent=2, sort_keys=True)
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Plan provider-neutral codex-mesh workflow runs from Beads formulas")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    for command in ("plan", "run", "status"):
+        sub = subparsers.add_parser(command, description=f"{command} a CUE-shaped workflow run")
+        sub.add_argument("--formula-dir", help="directory containing <formula>.formula.json files")
+        sub.add_argument("--run-id", help="stable run id to emit")
+        sub.add_argument("request_json", help="path to a #WorkflowRequest JSON file")
+        sub.set_defaults(func=build_run)
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

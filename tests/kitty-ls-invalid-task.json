@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "tabs": [
+      {
+        "id": 1,
+        "windows": [
+          {
+            "id": 14,
+            "title": "legacy-invalid-task",
+            "cwd": "/workspace/codex-mesh",
+            "user_vars": {
+              "codex_addr": "codex-legacy-1",
+              "codex_role": "implementation",
+              "codex_task": "not a bead id"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

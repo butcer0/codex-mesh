@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+	SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd)"
+	SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+	[[ "$SCRIPT_PATH" == /* ]] || SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd)"
+# shellcheck source=scripts/codex-mesh-lib.sh
+source "$SCRIPT_DIR/codex-mesh-lib.sh"
+
+usage() {
+	cat <<'USAGE'
+Usage: tell [--resolve-only] [--mesh-root DIR] ADDR [message...]
+       tell ADDR --stdin
+
+Send a normal Codex user prompt to the running agent registered with ADDR.
+The address must resolve to exactly one kitty window, otherwise tell fails.
+USAGE
+}
+
+resolve_only=0
+read_stdin=0
+mesh_root="${CODEX_MESH_ROOT:-}"
+
+while (($# > 0)); do
+	case "$1" in
+	-h|--help)
+		usage
+		exit 0
+		;;
+	--resolve-only)
+		resolve_only=1
+		shift
+		;;
+	--stdin)
+		read_stdin=1
+		shift
+		;;
+	--mesh-root)
+		(($# >= 2)) || codex_mesh_die "tell: --mesh-root requires a value"
+		mesh_root="$2"
+		shift 2
+		;;
+	--)
+		shift
+		break
+		;;
+	-*)
+		codex_mesh_die "tell: unknown option: $1"
+		;;
+	*)
+		break
+		;;
+	esac
+done
+
+(($# >= 1)) || codex_mesh_die "tell: missing ADDR"
+addr="$1"
+shift
+codex_mesh_validate_addr "$addr"
+codex_mesh_need kitty
+codex_mesh_need jq
+codex_mesh_need python3
+[[ -z "$mesh_root" ]] || mesh_root="$(codex_mesh_abs_dir "$mesh_root")"
+
+if (($# > 0)) && [[ "$1" == "--stdin" ]]; then
+	read_stdin=1
+	shift
+fi
+if ((read_stdin)) && (($# > 0)); then
+	codex_mesh_die "tell: --stdin cannot be combined with message arguments"
+fi
+
+resolved="$(codex_mesh_resolve_addr "$addr" "$mesh_root" "$(pwd -P)")"
+status="${resolved%% *}"
+case "$status" in
+ok)
+	window_id="${resolved#ok }"
+	;;
+zero)
+	codex_mesh_die "tell: no running agent matched codex_addr=$addr"
+	;;
+multiple)
+	codex_mesh_die "tell: multiple running agents matched codex_addr=$addr (${resolved#multiple })"
+	;;
+*)
+	codex_mesh_die "tell: could not resolve codex_addr=$addr"
+	;;
+esac
+
+if ((resolve_only)); then
+	printf 'codex_addr=%s\nwindow_id=%s\n' "$addr" "$window_id"
+	exit 0
+fi
+
+if ((read_stdin)); then
+	message="$(cat)"
+elif (($# > 0)); then
+	message="$(codex_mesh_join_message "$@")"
+elif [[ ! -t 0 ]]; then
+	message="$(cat)"
+else
+	codex_mesh_die "tell: missing message"
+fi
+
+[[ -n "$message" ]] || codex_mesh_die "tell: empty message"
+
+if [[ "${CODEX_MESH_DRY_RUN:-}" == "1" ]]; then
+	printf 'dry-run tell addr=%s window_id=%s message=%s\n' "$addr" "$window_id" "$message"
+	exit 0
+fi
+
+codex_mesh_send_prompt_to_window "$window_id" "$message" "$mesh_root" "$(pwd -P)"
+printf 'sent codex_addr=%s window_id=%s\n' "$addr" "$window_id"

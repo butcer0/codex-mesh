@@ -1,0 +1,34 @@
+[
+  {
+    "id": "mesh-active",
+    "title": "active implementation",
+    "status": "in_progress",
+    "priority": 3,
+    "issue_type": "task",
+    "assignee": "galeavenworth-personal",
+    "dependency_count": 0,
+    "dependent_count": 0,
+    "comment_count": 0
+  },
+  {
+    "id": "mesh-quiet",
+    "title": "quiet reviewer",
+    "status": "open",
+    "priority": 3,
+    "issue_type": "task",
+    "dependency_count": 0,
+    "dependent_count": 0,
+    "comment_count": 0
+  },
+  {
+    "id": "mesh-detached",
+    "title": "detached hooked task",
+    "status": "hooked",
+    "priority": 3,
+    "issue_type": "task",
+    "assignee": "codex-watch-worker",
+    "dependency_count": 0,
+    "dependent_count": 0,
+    "comment_count": 0
+  }
+]

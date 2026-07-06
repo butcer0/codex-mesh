@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "tabs": [
+      {
+        "id": 1,
+        "windows": [
+          {
+            "id": 7,
+            "title": "codex-watch-active",
+            "cwd": "/workspace/codex-mesh",
+            "pid": 12345,
+            "cmdline": [
+              "codex",
+              "--yolo"
+            ],
+            "user_vars": {
+              "codex_addr": "codex-watch-active",
+              "codex_role": "implementation",
+              "codex_task": "mesh-active"
+            }
+          },
+          {
+            "id": 8,
+            "title": "codex-watch-quiet",
+            "cwd": "/workspace/codex-mesh",
+            "pid": 12346,
+            "cmdline": [
+              "codex",
+              "--yolo"
+            ],
+            "user_vars": {
+              "codex_addr": "codex-watch-quiet",
+              "codex_role": "reviewer",
+              "codex_task": "mesh-quiet"
+            }
+          },
+          {
+            "id": 9,
+            "title": "codex-watch-orphan",
+            "cwd": "/workspace/lab-notes",
+            "pid": 12347,
+            "cmdline": [
+              "codex",
+              "--yolo"
+            ],
+            "user_vars": {
+              "codex_addr": "codex-watch-orphan",
+              "codex_role": "adhoc"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

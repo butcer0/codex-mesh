@@ -1,0 +1,42 @@
+{
+  "formula": "judge-panel",
+  "description": "Run independent attempts, parallel judges, and a synthesis verdict.",
+  "version": 1,
+  "type": "workflow",
+  "steps": [
+    {
+      "id": "attempt-a",
+      "title": "attempt: independent solution A",
+      "description": "Produce one independent implementation result.",
+      "type": "task",
+      "priority": 1,
+      "goal": {
+        "description": "Attempt returns a structured implementation result.",
+        "check": "cue vet result-a.json model/contract.cue -d '#ResultEnvelope'"
+      },
+      "result_payload": "implementation",
+      "wave": {
+        "prompt_mode": "goal-first",
+        "mutating": true,
+        "isolation": {
+          "mode": "worktree",
+          "worktree_base": "/tmp/codex-mesh-worktrees",
+          "cleanup": "remove-if-unchanged"
+        }
+      }
+    },
+    {
+      "id": "synthesis",
+      "title": "judge: synthesis verdict",
+      "description": "Judge the independent attempt and produce one verdict.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["attempt-a"],
+      "goal": {
+        "description": "Synthesis returns a structured verdict.",
+        "check": "cue vet verdict.json model/contract.cue -d '#ResultEnvelope'"
+      },
+      "result_payload": "verdict"
+    }
+  ]
+}

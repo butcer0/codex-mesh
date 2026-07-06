@@ -1,0 +1,46 @@
+{
+  "formula": "review-wave",
+  "description": "Find changed surfaces, dispatch independent adversarial reviewers, then require a majority verdict.",
+  "version": 1,
+  "type": "workflow",
+  "steps": [
+    {
+      "id": "find",
+      "title": "find: review targets",
+      "description": "Identify files and contracts to review.",
+      "type": "task",
+      "priority": 1,
+      "goal": {
+        "description": "Review target list exists.",
+        "check": "bd show {{task}}"
+      },
+      "result_payload": "implementation"
+    },
+    {
+      "id": "refute-a",
+      "title": "review: adversarial refuter A",
+      "description": "Run an independent reviewer against the target list.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["find"],
+      "goal": {
+        "description": "Reviewer returns structured findings.",
+        "check": "cue vet result.json model/contract.cue -d '#ResultEnvelope'"
+      },
+      "result_payload": "review_findings"
+    },
+    {
+      "id": "verdict",
+      "title": "judge: majority verdict",
+      "description": "Synthesize independent refutations into a pass/fail verdict.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["refute-a"],
+      "goal": {
+        "description": "Judge returns a structured verdict.",
+        "check": "cue vet verdict.json model/contract.cue -d '#ResultEnvelope'"
+      },
+      "result_payload": "verdict"
+    }
+  ]
+}

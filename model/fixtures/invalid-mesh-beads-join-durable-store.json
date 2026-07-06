@@ -1,0 +1,8 @@
+{
+  "exposure": "read-time-join",
+  "beads_command": "bd list --status=open,in_progress,hooked --json",
+  "agents": [],
+  "tasks": [],
+  "records": [],
+  "durable_store": "sqlite"
+}

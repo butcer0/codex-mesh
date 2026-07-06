@@ -1,0 +1,16 @@
+{
+  "formula": "bad-formula",
+  "description": "Formula steps must be born as goal loops.",
+  "version": 1,
+  "type": "workflow",
+  "steps": [
+    {
+      "id": "step",
+      "title": "step without goal",
+      "description": "This step has no goal metadata.",
+      "type": "task",
+      "priority": 2,
+      "result_payload": "implementation"
+    }
+  ]
+}

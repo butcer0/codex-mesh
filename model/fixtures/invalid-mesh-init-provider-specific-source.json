@@ -1,0 +1,15 @@
+{
+  "record_type": "mesh_init",
+  "mesh_root": "/workspace",
+  "prefix": "lab",
+  "dry_run": true,
+  "remote_url": "http://example.invalid:50051/example/lab",
+  "remote_source": "provider-specific",
+  "commands": [
+    {
+      "argv": ["bd", "init"],
+      "cwd": "/workspace",
+      "status": "planned"
+    }
+  ]
+}

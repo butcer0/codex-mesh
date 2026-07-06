@@ -1,0 +1,52 @@
+{
+  "record_type": "runner_decision",
+  "step_id": "closeout",
+  "action": "close",
+  "reason": "this should fail because close requires a green predicate",
+  "visible_to_operator": true,
+  "communication_channel": "none",
+  "predicate_status": "red",
+  "placement": {
+    "repo_id": "codex-mesh",
+    "task_id": "mesh-dj8.1",
+    "role": "judge",
+    "cwd": "/workspace/codex-mesh",
+    "placement_key": "codex-mesh/mesh-dj8.1/judge/attempt-1",
+    "execution_mode": "read_only",
+    "isolation_mode": "shared_checkout",
+    "communication_channel": "none",
+    "reason": "judge can inspect without mutating the checkout",
+    "command_set": {
+      "side_effect_free": true,
+      "mutates_repo_state": false,
+      "mutates_beads_state": false,
+      "mutates_git_metadata": false
+    },
+    "beads": {
+      "task_claim_required": false,
+      "lifecycle_mutation": false,
+      "merge_slot_required": false
+    }
+  },
+  "result": {
+    "record_type": "result_envelope",
+    "task": "mesh-dj8.1",
+    "session_id": "9",
+    "address": "wf-judge-mesh-dj8-1",
+    "status": "completed",
+    "completed_at_unix": 1760000000,
+    "role": "judge",
+    "evidence": [
+      {
+        "kind": "predicate",
+        "label": "close",
+        "exit_code": 1
+      }
+    ],
+    "payload": {
+      "kind": "verdict",
+      "verdict": "fail",
+      "rationale": "Predicate stayed red."
+    }
+  }
+}

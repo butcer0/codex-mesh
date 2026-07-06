@@ -1,0 +1,21 @@
+{
+  "record_type": "result_envelope",
+  "task": "mesh-sml",
+  "session_id": "9",
+  "address": "codex-judge-1",
+  "role": "judge",
+  "status": "completed",
+  "completed_at_unix": 1783278000,
+  "evidence": [
+    {
+      "kind": "beads",
+      "label": "bead close signal",
+      "ref": "mesh-sml"
+    }
+  ],
+  "payload": {
+    "kind": "verdict",
+    "verdict": "pass",
+    "rationale": "Envelope is machine-checkable and attached to the task closeout."
+  }
+}

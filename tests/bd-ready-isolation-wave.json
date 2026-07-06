@@ -1,0 +1,14 @@
+[
+  {
+    "id": "mesh-dy4.5",
+    "title": "implement: worktree isolation runtime",
+    "status": "open",
+    "parent": "mesh-dy4"
+  },
+  {
+    "id": "mesh-dy4.6",
+    "title": "review: worktree isolation runtime",
+    "status": "open",
+    "parent": "mesh-dy4"
+  }
+]

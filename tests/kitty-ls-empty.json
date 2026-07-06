@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "tabs": [
+      {
+        "id": 1,
+        "windows": [
+          {
+            "id": 9,
+            "title": "unregistered",
+            "cwd": "/tmp",
+            "user_vars": {}
+          }
+        ]
+      }
+    ]
+  }
+]

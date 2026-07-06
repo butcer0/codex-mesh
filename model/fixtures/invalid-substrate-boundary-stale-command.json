@@ -1,0 +1,26 @@
+{
+  "beads_version": "1.1.0",
+  "responsibilities": {
+    "task_graph": "beads",
+    "work_assignment": "beads",
+    "durable_handoff_context": "beads",
+    "cross_repo_routing": "beads",
+    "mesh_workspace_container": "beads",
+    "async_coordination": "beads",
+    "merge_serialization": "beads",
+    "live_process_launch": "codex-mesh",
+    "live_address_resolution": "codex-mesh",
+    "prompt_delivery": "codex-mesh",
+    "parent_window_close": "codex-mesh",
+    "remote_configuration": "operator-config",
+    "secrets_and_infra": "operator-config"
+  },
+  "beads_primitives": [
+    "bd ready",
+    "bd routes",
+    "bd hook",
+    "bd agents",
+    "bd pin",
+    "bd reservations"
+  ]
+}

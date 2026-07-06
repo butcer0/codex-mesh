@@ -1,0 +1,18 @@
+{
+  "exposure": "live-query",
+  "session_id": "7",
+  "window_id": 7,
+  "address": "codex-implementation-1",
+  "role": "implementation",
+  "parent": "codex-parent-1",
+  "task": "mesh-1sc",
+  "cwd": "/workspace/codex-mesh",
+  "pid": 12345,
+  "cmdline": ["codex", "--yolo"],
+  "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",
+  "transcript_exists": true,
+  "transcript_bytes": 4096,
+  "last_output_unix": 1783278000,
+  "idle_seconds": 3,
+  "working_state": "active"
+}

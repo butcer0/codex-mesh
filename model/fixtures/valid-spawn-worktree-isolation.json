@@ -1,0 +1,24 @@
+{
+  "command": "spawn",
+  "backend": "kitty",
+  "address": "codex-worktree-1",
+  "role": "implementation",
+  "task": "mesh-dy4.5",
+  "workdir": "/workspace/codex-mesh",
+  "message": "/goal complete mesh-dy4.5",
+  "isolation": {
+    "mode": "worktree",
+    "worktree_base": "/tmp/codex-mesh-worktrees",
+    "cleanup": "remove-if-unchanged"
+  },
+  "worktree_plan": {
+    "record_type": "worktree_plan",
+    "address": "codex-worktree-1",
+    "source_workdir": "/workspace/codex-mesh",
+    "worktree_base": "/tmp/codex-mesh-worktrees",
+    "worktree_path": "/tmp/codex-mesh-worktrees/codex-worktree-1",
+    "command": "git worktree add --detach <path> HEAD",
+    "cleanup": "remove-if-unchanged"
+  },
+  "keep_parent": true
+}

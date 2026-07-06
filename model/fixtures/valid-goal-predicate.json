@@ -1,0 +1,23 @@
+{
+  "record_type": "goal_predicate",
+  "task": "mesh-t8h.4",
+  "description": "The goal-state file exists.",
+  "frozen": true,
+  "red_check_required": true,
+  "close_requires_green": true,
+  "check": {
+    "kind": "command",
+    "cwd": "/workspace/codex-mesh",
+    "command": ["test", "-f", "/tmp/codex-mesh-goal-state"],
+    "expected_exit_code": 0,
+    "side_effect_free": true,
+    "timeout_seconds": 5
+  },
+  "adversarial": [
+    {
+      "label": "missing file",
+      "reason": "The predicate must be red before the file exists.",
+      "expected_status": "red"
+    }
+  ]
+}

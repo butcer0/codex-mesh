@@ -1,0 +1,26 @@
+[
+  {
+    "id": "mesh-9ln.5",
+    "title": "implement: wave dispatch runtime",
+    "status": "open",
+    "parent": "mesh-9ln"
+  },
+  {
+    "id": "mesh-9ln.6",
+    "title": "review: wave dispatch runtime",
+    "status": "open",
+    "parent": "mesh-9ln"
+  },
+  {
+    "id": "mesh-9ln.7",
+    "title": "closed task skipped by dispatcher",
+    "status": "closed",
+    "parent": "mesh-9ln"
+  },
+  {
+    "id": "mesh-dy4.1",
+    "title": "other epic task ignored by dispatcher",
+    "status": "open",
+    "parent": "mesh-dy4"
+  }
+]

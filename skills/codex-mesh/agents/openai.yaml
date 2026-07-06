@@ -1,0 +1,6 @@
+interface:
+  display_name: "Codex Mesh"
+  short_description: "Orchestration-by-default Codex mesh workflows"
+  default_prompt: "Use $codex-mesh to orchestrate by default: decompose substantive work into a Beads formula, dispatch bounded role waves, and close only on green goal predicates with result envelopes."
+policy:
+  allow_implicit_invocation: true

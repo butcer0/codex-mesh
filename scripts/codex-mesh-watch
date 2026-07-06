@@ -1,0 +1,373 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import sys
+import time
+
+
+BEADS_COMMAND = "bd list --status=open,in_progress,hooked --json"
+STATE_ORDER = {
+    "active": 0,
+    "quiet": 1,
+    "detached": 2,
+    "orphan": 3,
+}
+AGENT_FIELDS = (
+    "session_id",
+    "window_id",
+    "address",
+    "role",
+    "cwd",
+    "transcript_path",
+    "transcript_exists",
+    "transcript_bytes",
+    "last_output_unix",
+    "idle_seconds",
+)
+TASK_FIELDS = (
+    "id",
+    "title",
+    "status",
+    "workspace",
+    "workspace_root",
+    "beads_status",
+    "priority",
+    "issue_type",
+    "assignee",
+    "parent",
+    "dependency_count",
+    "dependent_count",
+    "comment_count",
+)
+
+
+def load_json(path):
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def generated_at():
+    if os.environ.get("CODEX_MESH_NOW"):
+        return int(float(os.environ["CODEX_MESH_NOW"]))
+    return int(time.time())
+
+
+def source_from_env():
+    if (
+        os.environ.get("CODEX_MESH_KITTY_LS_FILE")
+        or os.environ.get("CODEX_MESH_BD_LIST_FILE")
+        or os.environ.get("CODEX_MESH_WORKSPACES_FILE")
+    ):
+        return "fixture"
+    return "live"
+
+
+def norm_path(path):
+    if not path:
+        return ""
+    return os.path.abspath(path)
+
+
+def is_under(path, root):
+    path = norm_path(path)
+    root = norm_path(root)
+    return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
+
+def find_workspace_for_cwd(cwd, workspaces):
+    matches = [workspace for workspace in workspaces if is_under(cwd, workspace["root"])]
+    if not matches:
+        return None
+    return max(matches, key=lambda workspace: len(workspace["root"]))
+
+
+def task_indexes(tasks):
+    by_workspace = {}
+    by_id = {}
+    for task in tasks:
+        key = (task.get("workspace_root"), task["id"])
+        by_workspace[key] = task
+        by_id.setdefault(task["id"], []).append(task)
+    return by_workspace, by_id
+
+
+def find_task_for_agent(agent, workspace, by_workspace, by_id):
+    task_id = agent.get("task")
+    if not task_id:
+        return None
+    if workspace:
+        task = by_workspace.get((workspace["root"], task_id))
+        if task:
+            return task
+    matches = by_id.get(task_id, [])
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def last_output_known(agent):
+    return bool(agent.get("transcript_exists")) and (
+        agent.get("last_output_unix") is not None or agent.get("idle_seconds") is not None
+    )
+
+
+def copy_agent_fields(row, agent):
+    for field in AGENT_FIELDS:
+        if field in agent and agent[field] is not None:
+            row[field] = agent[field]
+
+
+def add_workspace_fields(row, workspace):
+    if not workspace:
+        return
+    row["workspace"] = workspace["name"]
+    row["workspace_root"] = workspace["root"]
+    row["beads_status"] = workspace["beads_status"]
+
+
+def add_task_fields(row, task):
+    if not task:
+        return
+    row["task_id"] = task["id"]
+    row["task_title"] = task.get("title") or "-"
+    row["task_status"] = task["status"]
+    for field in ("workspace", "workspace_root", "beads_status"):
+        if task.get(field) is not None:
+            row[field] = task[field]
+
+
+def row_from_live_agent(agent, workspace, task):
+    if task:
+        state = "active" if agent.get("working_state") == "active" else "quiet"
+    else:
+        state = "orphan"
+    row = {
+        "record_type": "watch_row",
+        "state": state,
+        "last_output_known": last_output_known(agent),
+    }
+    copy_agent_fields(row, agent)
+    add_workspace_fields(row, workspace)
+    add_task_fields(row, task)
+    if not task and agent.get("task"):
+        row["task_id"] = agent["task"]
+    return row
+
+
+def row_from_detached_task(task):
+    return {
+        "record_type": "watch_row",
+        "state": "detached",
+        "task_id": task["id"],
+        "task_title": task.get("title") or "-",
+        "task_status": task["status"],
+        "workspace": task["workspace"],
+        "workspace_root": task["workspace_root"],
+        "beads_status": task["beads_status"],
+        "last_output_known": False,
+        "resume_signal": task.get("status") in ("in_progress", "hooked"),
+    }
+
+
+def normalize_agents(agents_payload):
+    return agents_payload.get("agents", [])
+
+
+def normalize_tasks(workspaces_payload):
+    tasks = []
+    for task in workspaces_payload.get("tasks", []):
+        tasks.append({field: task[field] for field in TASK_FIELDS if field in task and task[field] is not None})
+    return tasks
+
+
+def normalize_workspaces(workspaces_payload):
+    return workspaces_payload.get("workspaces", [])
+
+
+def sort_key(row):
+    return (
+        STATE_ORDER[row["state"]],
+        row.get("workspace") or "",
+        row.get("task_id") or "",
+        row.get("address") or "",
+        row.get("session_id") or "",
+    )
+
+
+def make_summary(rows):
+    summary = {
+        "total": len(rows),
+        "active": 0,
+        "quiet": 0,
+        "orphan": 0,
+        "detached": 0,
+    }
+    for row in rows:
+        summary[row["state"]] += 1
+    return summary
+
+
+def make_snapshot(agents_payload, workspaces_payload, idle_threshold, include_detached, kitty_context=None):
+    agents = normalize_agents(agents_payload)
+    workspaces = normalize_workspaces(workspaces_payload)
+    tasks = normalize_tasks(workspaces_payload)
+    by_workspace, by_id = task_indexes(tasks)
+    matched_task_keys = set()
+    rows = []
+
+    for agent in agents:
+        workspace = find_workspace_for_cwd(agent.get("cwd", ""), workspaces)
+        task = find_task_for_agent(agent, workspace, by_workspace, by_id)
+        if task:
+            matched_task_keys.add((task.get("workspace_root"), task["id"]))
+        rows.append(row_from_live_agent(agent, workspace, task))
+
+    if include_detached:
+        for task in tasks:
+            key = (task.get("workspace_root"), task["id"])
+            if key not in matched_task_keys:
+                rows.append(row_from_detached_task(task))
+
+    rows.sort(key=sort_key)
+    snapshot = {
+        "record_type": "watch_snapshot",
+        "exposure": "live-watch",
+        "source": source_from_env(),
+        "generated_at_unix": generated_at(),
+        "idle_threshold_seconds": idle_threshold,
+        "include_detached": include_detached,
+        "workspace_scan_depth": workspaces_payload.get("workspace_scan_depth", 1),
+        "beads_command": workspaces_payload.get("beads_command") or BEADS_COMMAND,
+        "workspaces": workspaces,
+        "summary": make_summary(rows),
+        "rows": rows,
+    }
+    if workspaces_payload.get("mesh_root"):
+        snapshot["mesh_root"] = workspaces_payload["mesh_root"]
+    if kitty_context:
+        snapshot["kitty_context"] = kitty_context
+    return snapshot
+
+
+def compact_path(path):
+    if not path:
+        return "-"
+    home = os.path.expanduser("~")
+    if path == home:
+        return "~"
+    if path.startswith(home + os.sep):
+        return "~/" + path[len(home) + 1 :]
+    return path
+
+
+def format_duration(seconds):
+    if seconds is None:
+        return "unknown"
+    seconds = int(seconds)
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes, seconds = divmod(seconds, 60)
+    if minutes < 60:
+        return f"{minutes}m{seconds:02d}s"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h{minutes:02d}m"
+
+
+def workspace_counts(workspaces):
+    counts = {"available": 0, "missing": 0, "error": 0, "unknown": 0}
+    for workspace in workspaces:
+        counts[workspace.get("beads_status", "unknown")] += 1
+    return counts
+
+
+def print_table(snapshot):
+    headers = ["STATE", "TASK", "PROJECT", "BEADS", "ADDR", "ROLE", "QUIET", "CWD", "TRANSCRIPT"]
+    rows = []
+    for row in snapshot["rows"]:
+        quiet = "-"
+        if row["state"] in ("active", "quiet", "orphan"):
+            quiet = format_duration(row.get("idle_seconds")) if row.get("last_output_known") else "unknown"
+        rows.append(
+            [
+                row["state"],
+                row.get("task_id", "-"),
+                row.get("workspace", "-"),
+                row.get("beads_status", "-"),
+                row.get("address", "-"),
+                row.get("role", "-"),
+                quiet,
+                compact_path(row.get("cwd")),
+                compact_path(row.get("transcript_path")),
+            ]
+        )
+
+    widths = [len(header) for header in headers]
+    for row in rows:
+        widths = [max(width, len(value)) for width, value in zip(widths, row)]
+
+    summary = snapshot["summary"]
+    agents = summary["active"] + summary["quiet"] + summary["orphan"]
+    counts = workspace_counts(snapshot["workspaces"])
+    print(
+        "mesh watch "
+        f"agents={agents} rows={summary['total']} active={summary['active']} quiet={summary['quiet']} "
+        f"detached={summary['detached']} orphan={summary['orphan']} "
+        f"workspaces={len(snapshot['workspaces'])} available={counts['available']} "
+        f"missing={counts['missing']} error={counts['error']}"
+    )
+    print("  ".join(header.ljust(width) for header, width in zip(headers, widths)))
+    for row in rows:
+        print("  ".join(value.ljust(width) for value, width in zip(row, widths)))
+
+    if snapshot["workspaces"]:
+        print()
+        workspace_headers = ["PROJECT", "ROLE", "BEADS", "TASKS", "ROOT"]
+        workspace_rows = [
+            [
+                workspace["name"],
+                workspace.get("workspace_role", "project"),
+                workspace["beads_status"],
+                str(workspace["task_count"]),
+                compact_path(workspace["root"]),
+            ]
+            for workspace in snapshot["workspaces"]
+        ]
+        workspace_widths = [len(header) for header in workspace_headers]
+        for row in workspace_rows:
+            workspace_widths = [max(width, len(value)) for width, value in zip(workspace_widths, row)]
+        print("  ".join(header.ljust(width) for header, width in zip(workspace_headers, workspace_widths)))
+        for row in workspace_rows:
+            print("  ".join(value.ljust(width) for value, width in zip(row, workspace_widths)))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Render a codex-mesh watch snapshot")
+    parser.add_argument("--mode", choices=("table", "json", "ndjson"), default="table")
+    parser.add_argument("--idle-threshold", type=int, default=30)
+    parser.add_argument("--include-detached", action="store_true", help="include Beads tasks without live terminals")
+    parser.add_argument("--kitty-context", help="resolved kitty context JSON payload")
+    parser.add_argument("agents_json", help="mesh agents JSON payload")
+    parser.add_argument("workspaces_json", help="mesh workspaces JSON payload")
+    args = parser.parse_args()
+
+    kitty_context = load_json(args.kitty_context) if args.kitty_context else None
+    snapshot = make_snapshot(
+        load_json(args.agents_json),
+        load_json(args.workspaces_json),
+        args.idle_threshold,
+        args.include_detached,
+        kitty_context,
+    )
+    if args.mode == "table":
+        print_table(snapshot)
+    elif args.mode == "json":
+        json.dump(snapshot, sys.stdout, indent=2, sort_keys=True)
+        print()
+    else:
+        json.dump(snapshot, sys.stdout, sort_keys=True, separators=(",", ":"))
+        print()
+
+
+if __name__ == "__main__":
+    main()

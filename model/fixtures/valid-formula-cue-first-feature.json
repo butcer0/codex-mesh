@@ -1,0 +1,59 @@
+{
+  "formula": "cue-first-feature",
+  "description": "CUE-first feature workflow: design, deepen, spec, then mint the contract before implementation tickets exist.",
+  "version": 1,
+  "type": "workflow",
+  "steps": [
+    {
+      "id": "design",
+      "title": "design: feature boundary",
+      "description": "Record the feature boundary and contract candidates.",
+      "type": "task",
+      "priority": 1,
+      "goal": {
+        "description": "Design field captures ownership and CUE-shaped semantics.",
+        "check": "bd show {{epic}}"
+      },
+      "result_payload": "implementation"
+    },
+    {
+      "id": "deepen",
+      "title": "deepen: feature surfaces",
+      "description": "Ground relevant repo and external surfaces before spec.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["design"],
+      "goal": {
+        "description": "Deepen notes cite verified commands and reused seams.",
+        "check": "bd show {{epic}}"
+      },
+      "result_payload": "implementation"
+    },
+    {
+      "id": "spec",
+      "title": "spec: freeze feature contract",
+      "description": "Freeze CUE names, invariants, and verifier seams.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["deepen"],
+      "goal": {
+        "description": "Spec notes name the CUE contract and fail-closed fixtures.",
+        "check": "bd show {{epic}}"
+      },
+      "result_payload": "implementation"
+    },
+    {
+      "id": "mint-cue",
+      "title": "mint-cue: feature contract",
+      "description": "Write CUE and valid/adversarial fixtures.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["spec"],
+      "goal": {
+        "description": "The repository verifier is green with the new contract.",
+        "check": "./scripts/verify.sh"
+      },
+      "result_payload": "implementation"
+    }
+  ]
+}

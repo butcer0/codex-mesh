@@ -1,0 +1,10 @@
+{
+  "record_type": "watch_row",
+  "state": "detached",
+  "task_id": "mesh-h9o.2",
+  "task_title": "deepen: current live-status rails",
+  "task_status": "hooked",
+  "last_output_known": false,
+  "resume_signal": true,
+  "address": "codex-implementation-1"
+}

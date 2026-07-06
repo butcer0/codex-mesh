@@ -1,0 +1,190 @@
+{
+  "record_type": "workflow_run",
+  "command": "mesh workflow",
+  "mode": "plan",
+  "run_id": "workflow-readonly-shared",
+  "status": "planned",
+  "bounded": true,
+  "dry_run": true,
+  "live_mutation": false,
+  "request": {
+    "record_type": "workflow_request",
+    "formula": "review-wave",
+    "parent_task": "mesh-dj8",
+    "repo_id": "codex-mesh",
+    "workdir": "/workspace/codex-mesh",
+    "role": "reviewer",
+    "address_prefix": "wf-review",
+    "max_steps": 2,
+    "dry_run": true,
+    "live_mutation": false,
+    "default_execution_mode": "read_only",
+    "default_isolation_mode": "shared_checkout"
+  },
+  "max_steps": 2,
+  "formula_run": {
+    "record_type": "formula_run",
+    "formula_name": "review-wave",
+    "parent_task": "mesh-dj8",
+    "repo_id": "codex-mesh",
+    "workdir": "/workspace/codex-mesh",
+    "formula": {
+      "formula": "review-wave",
+      "description": "Two independent read-only reviewers share the project checkout.",
+      "version": 1,
+      "type": "workflow",
+      "steps": [
+        {
+          "id": "review-a",
+          "title": "review: public surface A",
+          "description": "Inspect one public surface without mutating the checkout.",
+          "type": "task",
+          "priority": 1,
+          "goal": {
+            "description": "Reviewer A returns structured findings.",
+            "check": "cue vet result-a.json model/contract.cue -d '#ResultEnvelope'"
+          },
+          "result_payload": "review_findings"
+        },
+        {
+          "id": "review-b",
+          "title": "review: public surface B",
+          "description": "Inspect another public surface without mutating the checkout.",
+          "type": "task",
+          "priority": 1,
+          "goal": {
+            "description": "Reviewer B returns structured findings.",
+            "check": "cue vet result-b.json model/contract.cue -d '#ResultEnvelope'"
+          },
+          "result_payload": "review_findings"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "record_type": "workflow_step_state",
+        "formula_step": "review-a",
+        "title": "review: public surface A",
+        "status": "ready",
+        "placement": {
+          "repo_id": "codex-mesh",
+          "task_id": "mesh-dj8.1",
+          "role": "reviewer",
+          "cwd": "/workspace/codex-mesh",
+          "placement_key": "codex-mesh/mesh-dj8.1/reviewer/attempt-1",
+          "execution_mode": "read_only",
+          "isolation_mode": "shared_checkout",
+          "communication_channel": "spawn",
+          "reason": "read-only reviewer can share the project checkout",
+          "command_set": {
+            "side_effect_free": true,
+            "mutates_repo_state": false,
+            "mutates_beads_state": false,
+            "mutates_git_metadata": false
+          },
+          "beads": {
+            "task_claim_required": false,
+            "lifecycle_mutation": false,
+            "merge_slot_required": false
+          }
+        },
+        "expected_result_payload": "review_findings",
+        "expected_result_envelope": true,
+        "close_policy": "green-predicate-and-result-envelope"
+      },
+      {
+        "record_type": "workflow_step_state",
+        "formula_step": "review-b",
+        "title": "review: public surface B",
+        "status": "ready",
+        "placement": {
+          "repo_id": "codex-mesh",
+          "task_id": "mesh-dj8.2",
+          "role": "reviewer",
+          "cwd": "/workspace/codex-mesh",
+          "placement_key": "codex-mesh/mesh-dj8.2/reviewer/attempt-1",
+          "execution_mode": "read_only",
+          "isolation_mode": "shared_checkout",
+          "communication_channel": "spawn",
+          "reason": "read-only reviewer can share the project checkout",
+          "command_set": {
+            "side_effect_free": true,
+            "mutates_repo_state": false,
+            "mutates_beads_state": false,
+            "mutates_git_metadata": false
+          },
+          "beads": {
+            "task_claim_required": false,
+            "lifecycle_mutation": false,
+            "merge_slot_required": false
+          }
+        },
+        "expected_result_payload": "review_findings",
+        "expected_result_envelope": true,
+        "close_policy": "green-predicate-and-result-envelope"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "record_type": "runner_decision",
+      "step_id": "review-a",
+      "action": "dispatch",
+      "reason": "visible read-only reviewer dispatch",
+      "visible_to_operator": true,
+      "communication_channel": "spawn",
+      "placement": {
+        "repo_id": "codex-mesh",
+        "task_id": "mesh-dj8.1",
+        "role": "reviewer",
+        "cwd": "/workspace/codex-mesh",
+        "placement_key": "codex-mesh/mesh-dj8.1/reviewer/attempt-1",
+        "execution_mode": "read_only",
+        "isolation_mode": "shared_checkout",
+        "communication_channel": "spawn",
+        "reason": "read-only reviewer can share the project checkout",
+        "command_set": {
+          "side_effect_free": true,
+          "mutates_repo_state": false,
+          "mutates_beads_state": false,
+          "mutates_git_metadata": false
+        },
+        "beads": {
+          "task_claim_required": false,
+          "lifecycle_mutation": false,
+          "merge_slot_required": false
+        }
+      }
+    },
+    {
+      "record_type": "runner_decision",
+      "step_id": "review-b",
+      "action": "dispatch",
+      "reason": "visible read-only reviewer dispatch",
+      "visible_to_operator": true,
+      "communication_channel": "spawn",
+      "placement": {
+        "repo_id": "codex-mesh",
+        "task_id": "mesh-dj8.2",
+        "role": "reviewer",
+        "cwd": "/workspace/codex-mesh",
+        "placement_key": "codex-mesh/mesh-dj8.2/reviewer/attempt-1",
+        "execution_mode": "read_only",
+        "isolation_mode": "shared_checkout",
+        "communication_channel": "spawn",
+        "reason": "read-only reviewer can share the project checkout",
+        "command_set": {
+          "side_effect_free": true,
+          "mutates_repo_state": false,
+          "mutates_beads_state": false,
+          "mutates_git_metadata": false
+        },
+        "beads": {
+          "task_claim_required": false,
+          "lifecycle_mutation": false,
+          "merge_slot_required": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+import sys
+import time
+
+
+LISTEN_RE = re.compile(r"^(unix|tcp):.+")
+
+
+def die(message):
+    print(message, file=sys.stderr)
+    raise SystemExit(1)
+
+
+def abs_path(path):
+    return os.path.abspath(os.path.expanduser(path))
+
+
+def default_config_path():
+    if os.environ.get("CODEX_MESH_CONTEXT_FILE"):
+        return abs_path(os.environ["CODEX_MESH_CONTEXT_FILE"])
+    config_home = os.environ.get("XDG_CONFIG_HOME")
+    if not config_home:
+        config_home = os.path.join(os.environ.get("HOME", ""), ".config")
+    return os.path.join(config_home, "codex-mesh", "contexts.json")
+
+
+def validate_listen_on(value):
+    if not value or not LISTEN_RE.match(value):
+        die(f"mesh context: invalid kitty listen-on address: {value or '<empty>'}")
+    return value
+
+
+def load_config(path):
+    if not os.path.exists(path):
+        return {"version": 1, "contexts": {}}
+    with open(path, encoding="utf-8") as handle:
+        data = json.load(handle)
+    if not isinstance(data, dict):
+        die("mesh context: context config must be a JSON object")
+    contexts = data.get("contexts", {})
+    if not isinstance(contexts, dict):
+        die("mesh context: context config .contexts must be an object")
+    data.setdefault("version", 1)
+    data["contexts"] = contexts
+    return data
+
+
+def save_config(path, data):
+    os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+    tmp_path = f"{path}.tmp.{os.getpid()}"
+    with open(tmp_path, "w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+    os.chmod(tmp_path, 0o600)
+    os.replace(tmp_path, path)
+
+
+def is_under(path, root):
+    path = abs_path(path)
+    root = abs_path(root)
+    return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
+
+def normalize_record(record, root, config_path):
+    listen_on = validate_listen_on(record.get("kitty_listen_on", ""))
+    out = {
+        "record_type": "kitty_context_resolution",
+        "source": "mesh-root-config",
+        "mesh_root": root,
+        "kitty_listen_on": listen_on,
+        "config_path": config_path,
+    }
+    return out
+
+
+def configured_context(data, config_path, mesh_root, cwd):
+    contexts = data.get("contexts", {})
+    if mesh_root:
+        root = abs_path(mesh_root)
+        record = contexts.get(root)
+        if not record:
+            return None
+        out = normalize_record(record, root, config_path)
+        out["cwd"] = abs_path(cwd)
+        return out
+
+    cwd = abs_path(cwd)
+    matches = []
+    for root, record in contexts.items():
+        root = abs_path(root)
+        if is_under(cwd, root):
+            matches.append((root, record))
+    if not matches:
+        return None
+    root, record = max(matches, key=lambda item: len(item[0]))
+    out = normalize_record(record, root, config_path)
+    out["cwd"] = cwd
+    return out
+
+
+def env_resolution(mesh_root, cwd, value):
+    out = {
+        "record_type": "kitty_context_resolution",
+        "source": "env",
+        "cwd": abs_path(cwd),
+        "kitty_listen_on": validate_listen_on(value),
+    }
+    if mesh_root:
+        out["mesh_root"] = abs_path(mesh_root)
+    return out
+
+
+def current_kitty_resolution(mesh_root, cwd):
+    out = {
+        "record_type": "kitty_context_resolution",
+        "source": "current-kitty",
+        "cwd": abs_path(cwd),
+    }
+    if mesh_root:
+        out["mesh_root"] = abs_path(mesh_root)
+    return out
+
+
+def resolve(mesh_root, cwd, config_path):
+    override = os.environ.get("CODEX_MESH_KITTY_LISTEN_ON")
+    if override:
+        return env_resolution(mesh_root, cwd, override)
+
+    data = load_config(config_path)
+    configured = configured_context(data, config_path, mesh_root, cwd)
+    if configured:
+        return configured
+
+    env_listen_on = os.environ.get("KITTY_LISTEN_ON")
+    if env_listen_on:
+        return env_resolution(mesh_root, cwd, env_listen_on)
+
+    return current_kitty_resolution(mesh_root, cwd)
+
+
+def binding(mesh_root, listen_on, config_path):
+    return {
+        "record_type": "kitty_context_binding",
+        "source": "mesh-root-config",
+        "mesh_root": abs_path(mesh_root),
+        "kitty_listen_on": validate_listen_on(listen_on),
+        "config_path": config_path,
+        "updated_at_unix": int(time.time()),
+    }
+
+
+def print_payload(payload, as_json):
+    if as_json:
+        json.dump(payload, sys.stdout, indent=2, sort_keys=True)
+        print()
+        return
+    for key in ("record_type", "source", "mesh_root", "cwd", "kitty_listen_on", "config_path"):
+        if key in payload:
+            print(f"{key}={payload[key]}")
+
+
+def bind(args):
+    config_path = default_config_path()
+    listen_on = args.listen_on or os.environ.get("CODEX_MESH_KITTY_LISTEN_ON") or os.environ.get("KITTY_LISTEN_ON")
+    if not listen_on:
+        die("mesh context bind: --listen-on is required outside a kitty listen_on environment")
+    record = binding(args.mesh_root, listen_on, config_path)
+    data = load_config(config_path)
+    data.setdefault("version", 1)
+    data.setdefault("contexts", {})
+    data["contexts"][record["mesh_root"]] = {
+        "kitty_listen_on": record["kitty_listen_on"],
+        "updated_at_unix": record["updated_at_unix"],
+    }
+    save_config(config_path, data)
+    print_payload(record, args.json)
+
+
+def show_or_resolve(args):
+    payload = resolve(args.mesh_root, args.cwd or os.getcwd(), default_config_path())
+    print_payload(payload, args.json)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Resolve codex-mesh kitty context bindings")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    bind_parser = subparsers.add_parser("bind", help="bind a mesh root to a kitty listen_on address")
+    bind_parser.add_argument("--mesh-root", required=True, help="mesh root directory")
+    bind_parser.add_argument("--listen-on", help="kitty listen_on address")
+    bind_parser.add_argument("--json", action="store_true", help="emit JSON")
+    bind_parser.set_defaults(func=bind)
+
+    for name in ("show", "resolve"):
+        sub = subparsers.add_parser(name, help=f"{name} the resolved kitty context")
+        sub.add_argument("--mesh-root", help="mesh root directory")
+        sub.add_argument("--cwd", help="cwd used for longest-prefix context lookup")
+        sub.add_argument("--json", action="store_true", help="emit JSON")
+        sub.set_defaults(func=show_or_resolve)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

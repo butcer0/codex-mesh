@@ -1,0 +1,34 @@
+{
+  "record_type": "mesh_init",
+  "mesh_root": "/workspace",
+  "prefix": "lab",
+  "dry_run": true,
+  "remote_url": "http://example.invalid:50051/example/lab",
+  "remote_source": "operator-config",
+  "commands": [
+    {
+      "argv": ["mkdir", "-p", "/workspace"],
+      "status": "planned"
+    },
+    {
+      "argv": ["git", "init", "/workspace"],
+      "status": "planned"
+    },
+    {
+      "argv": [
+        "bd",
+        "init",
+        "--non-interactive",
+        "--init-if-missing",
+        "--prefix",
+        "lab",
+        "--skip-agents",
+        "--skip-hooks",
+        "--remote",
+        "http://example.invalid:50051/example/lab"
+      ],
+      "cwd": "/workspace",
+      "status": "planned"
+    }
+  ]
+}

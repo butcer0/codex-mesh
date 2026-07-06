@@ -1,0 +1,62 @@
+{
+  "record_type": "formula_run",
+  "formula_name": "loop-until-dry",
+  "parent_task": "mesh-dj8",
+  "repo_id": "codex-mesh",
+  "workdir": "/workspace/codex-mesh",
+  "formula": {
+    "formula": "loop-until-dry",
+    "description": "Serialize merge and closeout work through the main checkout.",
+    "version": 1,
+    "type": "workflow",
+    "phase": "vapor",
+    "steps": [
+      {
+        "id": "merge",
+        "title": "merge: serialize accepted work",
+        "description": "Own the main checkout while holding the Beads merge slot.",
+        "type": "task",
+        "priority": 1,
+        "goal": {
+          "description": "Merge step returns a structured implementation envelope.",
+          "check": "cue vet merge-result.json model/contract.cue -d '#ResultEnvelope'"
+        },
+        "result_payload": "implementation"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "record_type": "workflow_step_state",
+      "formula_step": "merge",
+      "title": "merge: serialize accepted work",
+      "status": "ready",
+      "placement": {
+        "repo_id": "codex-mesh",
+        "task_id": "mesh-dj8.5",
+        "role": "merge",
+        "cwd": "/workspace/codex-mesh",
+        "placement_key": "codex-mesh/mesh-dj8.5/merge/attempt-1",
+        "execution_mode": "merge",
+        "isolation_mode": "main_owned",
+        "main_checkout_jurisdiction": true,
+        "communication_channel": "spawn",
+        "reason": "main checkout mutation is explicit and serialized by a Beads merge slot",
+        "command_set": {
+          "side_effect_free": false,
+          "mutates_repo_state": true,
+          "mutates_beads_state": true,
+          "mutates_git_metadata": true
+        },
+        "beads": {
+          "task_claim_required": true,
+          "lifecycle_mutation": true,
+          "merge_slot_required": true
+        }
+      },
+      "expected_result_payload": "implementation",
+      "expected_result_envelope": true,
+      "close_policy": "green-predicate-and-result-envelope"
+    }
+  ]
+}

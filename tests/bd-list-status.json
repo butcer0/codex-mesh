@@ -1,0 +1,35 @@
+[
+  {
+    "id": "mesh-1az.5",
+    "title": "implement: mesh status join command",
+    "status": "in_progress",
+    "priority": 1,
+    "issue_type": "task",
+    "assignee": "galeavenworth-personal",
+    "parent": "mesh-1az",
+    "dependency_count": 0,
+    "dependent_count": 0,
+    "comment_count": 0
+  },
+  {
+    "id": "mesh-open",
+    "title": "undispatched work",
+    "status": "open",
+    "priority": 2,
+    "issue_type": "task",
+    "dependency_count": 0,
+    "dependent_count": 0,
+    "comment_count": 0
+  },
+  {
+    "id": "mesh-hooked",
+    "title": "hooked work with no live window",
+    "status": "hooked",
+    "priority": 2,
+    "issue_type": "task",
+    "assignee": "codex-worker-1",
+    "dependency_count": 0,
+    "dependent_count": 0,
+    "comment_count": 0
+  }
+]

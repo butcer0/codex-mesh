@@ -1,0 +1,20 @@
+{
+  "record_type": "install_doctor",
+  "scope": "codex-mesh",
+  "dependency_policy": "prerequisites-explicit",
+  "auto_install": true,
+  "install_command": "make install",
+  "doctor_command": "mesh doctor",
+  "runtime_ready": true,
+  "verification_ready": true,
+  "package_manager_command": "sudo dnf install -y kitty",
+  "dependencies": [
+    {
+      "name": "kitty",
+      "required_for": "runtime",
+      "status": "found",
+      "path": "/usr/bin/kitty",
+      "purpose": "Own the live terminal transport and remote-control surface."
+    }
+  ]
+}

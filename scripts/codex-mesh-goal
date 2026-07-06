@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+import shlex
+import subprocess
+import sys
+import time
+
+
+BEADS_ISSUE_RE = re.compile(r"^[a-z][a-z0-9]*-[a-z0-9]+(-[a-z0-9]+)*(\.[0-9]+)*$")
+PHASES = ("red-check", "iteration", "close")
+EXCERPT_LIMIT = 4096
+
+
+def die(message):
+    print(f"codex-mesh-goal: {message}", file=sys.stderr)
+    sys.exit(2)
+
+
+def load_json(path):
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    except OSError as exc:
+        die(f"could not read predicate {path}: {exc}")
+    except json.JSONDecodeError as exc:
+        die(f"predicate is not valid JSON: {exc}")
+
+
+def require_bool(payload, field, value):
+    if payload.get(field) is not value:
+        die(f"predicate field {field!r} must be {str(value).lower()}")
+
+
+def validate_predicate(predicate):
+    if not isinstance(predicate, dict):
+        die("predicate must be a JSON object")
+    if predicate.get("record_type") != "goal_predicate":
+        die("predicate record_type must be goal_predicate")
+
+    task = predicate.get("task")
+    if not isinstance(task, str) or not BEADS_ISSUE_RE.match(task):
+        die("predicate task must be a Beads issue id")
+
+    for field in ("frozen", "red_check_required", "close_requires_green"):
+        require_bool(predicate, field, True)
+
+    check = predicate.get("check")
+    if not isinstance(check, dict):
+        die("predicate check must be an object")
+    if check.get("kind") != "command":
+        die("predicate check.kind must be command")
+    if check.get("side_effect_free") is not True:
+        die("predicate check.side_effect_free must be true")
+
+    cwd = check.get("cwd")
+    if not isinstance(cwd, str) or not os.path.isabs(cwd):
+        die("predicate check.cwd must be an absolute path")
+
+    command = check.get("command")
+    if (
+        not isinstance(command, list)
+        or len(command) == 0
+        or any(not isinstance(part, str) or part == "" for part in command)
+    ):
+        die("predicate check.command must be a non-empty string array")
+
+    expected = check.get("expected_exit_code", 0)
+    if not isinstance(expected, int):
+        die("predicate check.expected_exit_code must be an integer")
+    check["expected_exit_code"] = expected
+
+    timeout = check.get("timeout_seconds")
+    if timeout is not None and (not isinstance(timeout, int) or timeout <= 0):
+        die("predicate check.timeout_seconds must be a positive integer")
+
+    adversarial = predicate.get("adversarial")
+    if not isinstance(adversarial, list) or not adversarial:
+        die("predicate adversarial must be a non-empty array")
+
+    return predicate
+
+
+def checked_at_unix():
+    if os.environ.get("CODEX_MESH_NOW"):
+        try:
+            return int(float(os.environ["CODEX_MESH_NOW"]))
+        except ValueError:
+            die("CODEX_MESH_NOW must be a Unix timestamp")
+    return int(time.time())
+
+
+def excerpt(stdout, stderr):
+    combined = stdout
+    if stderr:
+        if combined:
+            combined += "\n"
+        combined += stderr
+    if len(combined) > EXCERPT_LIMIT:
+        return combined[:EXCERPT_LIMIT] + "\n[truncated]"
+    return combined
+
+
+def run_check(check):
+    try:
+        completed = subprocess.run(
+            check["command"],
+            cwd=check["cwd"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=check.get("timeout_seconds"),
+            check=False,
+        )
+        return completed.returncode, completed.stdout, completed.stderr
+    except subprocess.TimeoutExpired as exc:
+        return 124, exc.stdout or "", (exc.stderr or "") + "\ncommand timed out"
+    except FileNotFoundError as exc:
+        return 127, "", str(exc)
+    except PermissionError as exc:
+        return 126, "", str(exc)
+
+
+def check_predicate(args):
+    predicate = validate_predicate(load_json(args.predicate_json))
+    check = predicate["check"]
+    exit_code, stdout, stderr = run_check(check)
+    expected = check["expected_exit_code"]
+    status = "green" if exit_code == expected else "red"
+    evidence = {
+        "kind": "predicate",
+        "label": args.phase,
+        "command": shlex.join(check["command"]),
+        "exit_code": exit_code,
+        "output_excerpt": excerpt(stdout, stderr),
+    }
+    payload = {
+        "record_type": "goal_evaluation",
+        "task": predicate["task"],
+        "phase": args.phase,
+        "status": status,
+        "exit_code": exit_code,
+        "checked_at_unix": checked_at_unix(),
+        "predicate": predicate,
+        "evidence": evidence,
+    }
+    json.dump(payload, sys.stdout, indent=2, sort_keys=True)
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Evaluate codex-mesh goal predicates")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    check_parser = subparsers.add_parser("check", description="evaluate a #GoalPredicate JSON file")
+    check_parser.add_argument("--phase", choices=PHASES, default="iteration", help="goal-loop phase for the emitted evaluation")
+    check_parser.add_argument("predicate_json", help="path to a #GoalPredicate JSON file")
+    check_parser.set_defaults(func=check_predicate)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,27 @@
+{
+  "formula": "bad-mutating-formula",
+  "description": "Mutating formula waves must use worktree isolation.",
+  "version": 1,
+  "type": "workflow",
+  "steps": [
+    {
+      "id": "mutate",
+      "title": "mutating step without worktree",
+      "description": "This mutating wave lacks isolation.",
+      "type": "task",
+      "priority": 2,
+      "goal": {
+        "description": "Mutating work must be isolated.",
+        "check": "false"
+      },
+      "result_payload": "implementation",
+      "wave": {
+        "prompt_mode": "goal-first",
+        "mutating": true,
+        "isolation": {
+          "mode": "none"
+        }
+      }
+    }
+  ]
+}

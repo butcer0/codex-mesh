@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+	SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd)"
+	SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+	[[ "$SCRIPT_PATH" == /* ]] || SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd)"
+# shellcheck source=scripts/codex-mesh-lib.sh
+source "$SCRIPT_DIR/codex-mesh-lib.sh"
+
+usage() {
+	cat <<'USAGE'
+Usage: spawn [--addr ADDR] [--role ROLE] [--parent ADDR] [--task TASK]
+             [--mesh-root DIR]
+             [--isolation none|worktree] [--worktree-base DIR]
+             [directory] [message...]
+
+Create a new addressed Codex agent in a new kitty OS window and keep the
+initiating agent alive. If the first non-option argument is a directory, it is
+used as the new agent cwd. Remaining words are joined into one Codex message.
+By default, the child process is recorded to a raw PTY transcript.
+USAGE
+}
+
+role="implementation"
+addr=""
+parent="${CODEX_ADDR:-}"
+task=""
+mesh_root="${CODEX_MESH_ROOT:-}"
+isolation="none"
+worktree_base=""
+worktree_path=""
+
+while (($# > 0)); do
+	case "$1" in
+	-h|--help)
+		usage
+		exit 0
+		;;
+	--addr)
+		(($# >= 2)) || codex_mesh_die "spawn: --addr requires a value"
+		addr="$2"
+		shift 2
+		;;
+	--role)
+		(($# >= 2)) || codex_mesh_die "spawn: --role requires a value"
+		role="$2"
+		shift 2
+		;;
+	--parent)
+		(($# >= 2)) || codex_mesh_die "spawn: --parent requires a value"
+		parent="$2"
+		shift 2
+		;;
+	--task)
+		(($# >= 2)) || codex_mesh_die "spawn: --task requires a value"
+		task="$2"
+		shift 2
+		;;
+	--mesh-root)
+		(($# >= 2)) || codex_mesh_die "spawn: --mesh-root requires a value"
+		mesh_root="$2"
+		shift 2
+		;;
+	--isolation)
+		(($# >= 2)) || codex_mesh_die "spawn: --isolation requires a value"
+		isolation="$2"
+		shift 2
+		;;
+	--worktree-base)
+		(($# >= 2)) || codex_mesh_die "spawn: --worktree-base requires a value"
+		worktree_base="$2"
+		shift 2
+		;;
+	--)
+		shift
+		break
+		;;
+	-*)
+		codex_mesh_die "spawn: unknown option: $1"
+		;;
+	*)
+		break
+		;;
+	esac
+done
+
+codex_mesh_need bash
+codex_mesh_need kitty
+codex_mesh_need codex
+codex_mesh_need python3
+codex_mesh_validate_role "$role"
+codex_mesh_validate_isolation "$isolation"
+[[ -n "$addr" ]] || addr="$(codex_mesh_default_addr "$role")"
+codex_mesh_validate_addr "$addr"
+[[ -z "$parent" ]] || codex_mesh_validate_addr "$parent"
+[[ -z "$task" ]] || codex_mesh_validate_task "$task"
+
+workdir="$(pwd -P)"
+if (($# > 0)) && [[ -d "$1" ]]; then
+	workdir="$(cd "$1" && pwd -P)"
+	shift
+fi
+source_workdir="$workdir"
+[[ -z "$mesh_root" ]] || mesh_root="$(codex_mesh_abs_dir "$mesh_root")"
+codex_mesh_require_addr_available "$addr" "$mesh_root" "$source_workdir"
+
+if [[ "$isolation" == "worktree" ]]; then
+	[[ -n "$worktree_base" ]] || worktree_base="$(codex_mesh_default_worktree_base)"
+	worktree_path="$(codex_mesh_worktree_path "$addr" "$worktree_base")"
+	if [[ "${CODEX_MESH_DRY_RUN:-}" != "1" ]]; then
+		codex_mesh_prepare_worktree "$source_workdir" "$worktree_path"
+	fi
+	workdir="$worktree_path"
+fi
+
+message=""
+if (($# > 0)); then
+	message="$(codex_mesh_join_message "$@")"
+fi
+
+title="$addr"
+transcript_dir="$(codex_mesh_transcript_dir "$addr")"
+window_id="$(codex_mesh_spawn_codex "$addr" "$role" "$parent" "$task" "$title" "$workdir" "$transcript_dir" "$mesh_root" "$source_workdir" "$message")"
+printf 'codex_addr=%s\n' "$addr"
+printf 'window_id=%s\n' "$window_id"
+printf 'workdir=%s\n' "$workdir"
+if [[ -n "$worktree_path" ]]; then
+	printf 'codex_worktree=%s\n' "$worktree_path"
+fi
+if [[ -n "$transcript_dir" ]]; then
+	printf 'codex_session=%s\ncodex_transcript=%s/%s.ansi\n' "$window_id" "$transcript_dir" "$window_id"
+fi

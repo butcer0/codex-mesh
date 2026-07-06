@@ -1,0 +1,24 @@
+{
+  "exposure": "read-time-join",
+  "beads_command": "bd list --status=open,in_progress,hooked --json",
+  "agents": [],
+  "tasks": [
+    {
+      "id": "mesh-open",
+      "title": "undispatched work",
+      "status": "open"
+    }
+  ],
+  "records": [
+    {
+      "classification": "task_without_live_session",
+      "task_id": "mesh-open",
+      "task": {
+        "id": "mesh-open",
+        "title": "undispatched work",
+        "status": "open"
+      },
+      "resume_signal": true
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "tabs": [
+      {
+        "id": 1,
+        "windows": [
+          {
+            "id": 7,
+            "title": "codex-implementation-1",
+            "cwd": "/workspace/codex-mesh",
+            "pid": 12345,
+            "cmdline": ["codex", "--yolo"],
+            "user_vars": {
+              "codex_addr": "codex-implementation-1",
+              "codex_role": "implementation",
+              "codex_parent": "codex-parent-1",
+              "codex_task": "mesh-1sc"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

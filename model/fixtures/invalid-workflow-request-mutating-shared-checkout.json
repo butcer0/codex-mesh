@@ -1,0 +1,14 @@
+{
+  "record_type": "workflow_request",
+  "formula": "judge-panel",
+  "parent_task": "mesh-dj8",
+  "repo_id": "codex-mesh",
+  "workdir": "/workspace/codex-mesh",
+  "role": "implementation",
+  "address_prefix": "wf-impl",
+  "max_steps": 1,
+  "dry_run": true,
+  "live_mutation": false,
+  "default_execution_mode": "mutating",
+  "default_isolation_mode": "shared_checkout"
+}

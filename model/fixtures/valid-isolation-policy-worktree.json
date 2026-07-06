@@ -1,0 +1,5 @@
+{
+  "mode": "worktree",
+  "worktree_base": "/tmp/codex-mesh-worktrees",
+  "cleanup": "remove-if-unchanged"
+}

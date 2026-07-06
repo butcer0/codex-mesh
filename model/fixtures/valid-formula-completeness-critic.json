@@ -1,0 +1,20 @@
+{
+  "formula": "completeness-critic",
+  "description": "Ask what is still missing after the apparent closeout and require a structured verdict.",
+  "version": 1,
+  "type": "workflow",
+  "steps": [
+    {
+      "id": "critic",
+      "title": "critic: what is missing",
+      "description": "Review the completed work against the original objective.",
+      "type": "task",
+      "priority": 2,
+      "goal": {
+        "description": "Critic returns structured findings or a pass verdict.",
+        "check": "cue vet critic.json model/contract.cue -d '#ResultEnvelope'"
+      },
+      "result_payload": "review_findings"
+    }
+  ]
+}

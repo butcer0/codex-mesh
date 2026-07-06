@@ -1,0 +1,191 @@
+{
+  "record_type": "workflow_run",
+  "command": "mesh workflow",
+  "mode": "plan",
+  "run_id": "workflow-mutating-worktrees",
+  "status": "planned",
+  "bounded": true,
+  "dry_run": true,
+  "live_mutation": false,
+  "request": {
+    "record_type": "workflow_request",
+    "formula": "judge-panel",
+    "parent_task": "mesh-dj8",
+    "repo_id": "codex-mesh",
+    "workdir": "/workspace/codex-mesh",
+    "role": "implementation",
+    "address_prefix": "wf-impl",
+    "max_steps": 2,
+    "dry_run": true,
+    "live_mutation": false,
+    "default_execution_mode": "mutating",
+    "default_isolation_mode": "worktree",
+    "worktree_base": "/workspace/.worktrees"
+  },
+  "max_steps": 2,
+  "formula_run": {
+    "record_type": "formula_run",
+    "formula_name": "judge-panel",
+    "parent_task": "mesh-dj8",
+    "repo_id": "codex-mesh",
+    "workdir": "/workspace/codex-mesh",
+    "formula": {
+      "formula": "judge-panel",
+      "description": "Two independent implementation attempts for the same repo.",
+      "version": 1,
+      "type": "workflow",
+      "steps": [
+        {
+          "id": "attempt-a",
+          "title": "attempt: implementation A",
+          "description": "Implement one solution in an isolated worktree.",
+          "type": "task",
+          "priority": 1,
+          "goal": {
+            "description": "Attempt A returns an implementation envelope.",
+            "check": "cue vet result-a.json model/contract.cue -d '#ResultEnvelope'"
+          },
+          "result_payload": "implementation"
+        },
+        {
+          "id": "attempt-b",
+          "title": "attempt: implementation B",
+          "description": "Implement another solution in an isolated worktree.",
+          "type": "task",
+          "priority": 1,
+          "goal": {
+            "description": "Attempt B returns an implementation envelope.",
+            "check": "cue vet result-b.json model/contract.cue -d '#ResultEnvelope'"
+          },
+          "result_payload": "implementation"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "record_type": "workflow_step_state",
+        "formula_step": "attempt-a",
+        "title": "attempt: implementation A",
+        "status": "ready",
+        "placement": {
+          "repo_id": "codex-mesh",
+          "task_id": "mesh-dj8.3",
+          "role": "implementation",
+          "cwd": "/workspace/.worktrees/wf-impl-mesh-dj8-3",
+          "placement_key": "codex-mesh/mesh-dj8.3/implementation/attempt-1",
+          "execution_mode": "mutating",
+          "isolation_mode": "worktree",
+          "communication_channel": "spawn",
+          "reason": "mutating same-repo implementation uses deterministic worktree isolation",
+          "command_set": {
+            "side_effect_free": false,
+            "mutates_repo_state": true,
+            "mutates_beads_state": true,
+            "mutates_git_metadata": false
+          },
+          "beads": {
+            "task_claim_required": true,
+            "lifecycle_mutation": true,
+            "merge_slot_required": false
+          }
+        },
+        "expected_result_payload": "implementation",
+        "expected_result_envelope": true,
+        "close_policy": "green-predicate-and-result-envelope"
+      },
+      {
+        "record_type": "workflow_step_state",
+        "formula_step": "attempt-b",
+        "title": "attempt: implementation B",
+        "status": "ready",
+        "placement": {
+          "repo_id": "codex-mesh",
+          "task_id": "mesh-dj8.4",
+          "role": "implementation",
+          "cwd": "/workspace/.worktrees/wf-impl-mesh-dj8-4",
+          "placement_key": "codex-mesh/mesh-dj8.4/implementation/attempt-1",
+          "execution_mode": "mutating",
+          "isolation_mode": "worktree",
+          "communication_channel": "spawn",
+          "reason": "mutating same-repo implementation uses deterministic worktree isolation",
+          "command_set": {
+            "side_effect_free": false,
+            "mutates_repo_state": true,
+            "mutates_beads_state": true,
+            "mutates_git_metadata": false
+          },
+          "beads": {
+            "task_claim_required": true,
+            "lifecycle_mutation": true,
+            "merge_slot_required": false
+          }
+        },
+        "expected_result_payload": "implementation",
+        "expected_result_envelope": true,
+        "close_policy": "green-predicate-and-result-envelope"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "record_type": "runner_decision",
+      "step_id": "attempt-a",
+      "action": "dispatch",
+      "reason": "visible isolated implementation dispatch",
+      "visible_to_operator": true,
+      "communication_channel": "spawn",
+      "placement": {
+        "repo_id": "codex-mesh",
+        "task_id": "mesh-dj8.3",
+        "role": "implementation",
+        "cwd": "/workspace/.worktrees/wf-impl-mesh-dj8-3",
+        "placement_key": "codex-mesh/mesh-dj8.3/implementation/attempt-1",
+        "execution_mode": "mutating",
+        "isolation_mode": "worktree",
+        "communication_channel": "spawn",
+        "reason": "mutating same-repo implementation uses deterministic worktree isolation",
+        "command_set": {
+          "side_effect_free": false,
+          "mutates_repo_state": true,
+          "mutates_beads_state": true,
+          "mutates_git_metadata": false
+        },
+        "beads": {
+          "task_claim_required": true,
+          "lifecycle_mutation": true,
+          "merge_slot_required": false
+        }
+      }
+    },
+    {
+      "record_type": "runner_decision",
+      "step_id": "attempt-b",
+      "action": "dispatch",
+      "reason": "visible isolated implementation dispatch",
+      "visible_to_operator": true,
+      "communication_channel": "spawn",
+      "placement": {
+        "repo_id": "codex-mesh",
+        "task_id": "mesh-dj8.4",
+        "role": "implementation",
+        "cwd": "/workspace/.worktrees/wf-impl-mesh-dj8-4",
+        "placement_key": "codex-mesh/mesh-dj8.4/implementation/attempt-1",
+        "execution_mode": "mutating",
+        "isolation_mode": "worktree",
+        "communication_channel": "spawn",
+        "reason": "mutating same-repo implementation uses deterministic worktree isolation",
+        "command_set": {
+          "side_effect_free": false,
+          "mutates_repo_state": true,
+          "mutates_beads_state": true,
+          "mutates_git_metadata": false
+        },
+        "beads": {
+          "task_claim_required": true,
+          "lifecycle_mutation": true,
+          "merge_slot_required": false
+        }
+      }
+    }
+  ]
+}

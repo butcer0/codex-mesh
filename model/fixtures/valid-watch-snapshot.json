@@ -1,0 +1,105 @@
+{
+  "record_type": "watch_snapshot",
+  "exposure": "live-watch",
+  "source": "fixture",
+  "generated_at_unix": 1783275600,
+  "idle_threshold_seconds": 30,
+  "include_detached": false,
+  "mesh_root": "/workspace",
+  "kitty_context": {
+    "record_type": "kitty_context_resolution",
+    "source": "fixture",
+    "mesh_root": "/workspace",
+    "cwd": "/workspace/codex-mesh"
+  },
+  "workspace_scan_depth": 1,
+  "beads_command": "bd list --status=open,in_progress,hooked --json",
+  "workspaces": [
+    {
+      "name": "lab",
+      "root": "/workspace",
+      "workspace_role": "mesh-root",
+      "beads_status": "available",
+      "task_count": 0
+    },
+    {
+      "name": "codex-mesh",
+      "root": "/workspace/codex-mesh",
+      "workspace_role": "project",
+      "beads_status": "available",
+      "task_count": 3
+    },
+    {
+      "name": "lab-notes",
+      "root": "/workspace/lab-notes",
+      "workspace_role": "project",
+      "beads_status": "missing",
+      "task_count": 0
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "active": 1,
+    "quiet": 1,
+    "orphan": 1,
+    "detached": 0
+  },
+  "rows": [
+    {
+      "record_type": "watch_row",
+      "state": "active",
+      "session_id": "7",
+      "window_id": 7,
+      "address": "codex-implementation-1",
+      "role": "implementation",
+      "task_id": "mesh-h9o.5",
+      "task_title": "implement: mesh watch command",
+      "task_status": "in_progress",
+      "workspace": "codex-mesh",
+      "workspace_root": "/workspace/codex-mesh",
+      "beads_status": "available",
+      "cwd": "/workspace/codex-mesh",
+      "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",
+      "transcript_exists": true,
+      "transcript_bytes": 4096,
+      "last_output_unix": 1783275596,
+      "idle_seconds": 4,
+      "last_output_known": true
+    },
+    {
+      "record_type": "watch_row",
+      "state": "quiet",
+      "session_id": "8",
+      "window_id": 8,
+      "address": "codex-reviewer-1",
+      "role": "reviewer",
+      "task_id": "mesh-h9o.4",
+      "task_title": "mint-cue: watch contract and fixtures",
+      "task_status": "open",
+      "workspace": "codex-mesh",
+      "workspace_root": "/workspace/codex-mesh",
+      "beads_status": "available",
+      "cwd": "/workspace/codex-mesh",
+      "transcript_exists": false,
+      "last_output_known": false
+    },
+    {
+      "record_type": "watch_row",
+      "state": "orphan",
+      "session_id": "9",
+      "window_id": 9,
+      "address": "codex-adhoc-1",
+      "role": "adhoc",
+      "cwd": "/workspace/lab-notes",
+      "workspace": "lab-notes",
+      "workspace_root": "/workspace/lab-notes",
+      "beads_status": "missing",
+      "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/9.ansi",
+      "transcript_exists": true,
+      "transcript_bytes": 128,
+      "last_output_unix": 1783275580,
+      "idle_seconds": 20,
+      "last_output_known": true
+    }
+  ]
+}

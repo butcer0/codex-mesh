@@ -1,0 +1,86 @@
+{
+  "record_type": "workflow_run",
+  "command": "mesh workflow",
+  "mode": "plan",
+  "run_id": "workflow-invalid-mutating-shared",
+  "status": "planned",
+  "bounded": true,
+  "dry_run": true,
+  "live_mutation": false,
+  "request": {
+    "record_type": "workflow_request",
+    "formula": "judge-panel",
+    "parent_task": "mesh-dj8",
+    "repo_id": "codex-mesh",
+    "workdir": "/workspace/codex-mesh",
+    "role": "implementation",
+    "address_prefix": "wf-impl",
+    "max_steps": 1,
+    "dry_run": true,
+    "live_mutation": false,
+    "default_execution_mode": "mutating",
+    "default_isolation_mode": "shared_checkout"
+  },
+  "max_steps": 1,
+  "formula_run": {
+    "record_type": "formula_run",
+    "formula_name": "judge-panel",
+    "parent_task": "mesh-dj8",
+    "repo_id": "codex-mesh",
+    "workdir": "/workspace/codex-mesh",
+    "formula": {
+      "formula": "judge-panel",
+      "description": "Invalid mutating shared checkout.",
+      "version": 1,
+      "type": "workflow",
+      "steps": [
+        {
+          "id": "attempt",
+          "title": "attempt: unsafe shared checkout",
+          "description": "Mutates the repo without isolation.",
+          "type": "task",
+          "priority": 1,
+          "goal": {
+            "description": "Attempt returns a result.",
+            "check": "cue vet result.json model/contract.cue -d '#ResultEnvelope'"
+          },
+          "result_payload": "implementation"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "record_type": "workflow_step_state",
+        "formula_step": "attempt",
+        "title": "attempt: unsafe shared checkout",
+        "status": "ready",
+        "placement": {
+          "repo_id": "codex-mesh",
+          "task_id": "mesh-dj8.1",
+          "role": "implementation",
+          "cwd": "/workspace/codex-mesh",
+          "placement_key": "codex-mesh/mesh-dj8.1/implementation/attempt-1",
+          "execution_mode": "mutating",
+          "isolation_mode": "shared_checkout",
+          "communication_channel": "spawn",
+          "reason": "this should fail because mutating work cannot share the checkout",
+          "command_set": {
+            "side_effect_free": false,
+            "mutates_repo_state": true,
+            "mutates_beads_state": true,
+            "mutates_git_metadata": false
+          },
+          "beads": {
+            "task_claim_required": true,
+            "lifecycle_mutation": true,
+            "merge_slot_required": false
+          }
+        },
+        "expected_result_payload": "implementation",
+        "expected_result_envelope": true,
+        "close_policy": "green-predicate-and-result-envelope"
+      }
+    ]
+  },
+  "decisions": []
+}

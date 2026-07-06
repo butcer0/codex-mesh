@@ -1,0 +1,8 @@
+{
+  "command": "mesh watch",
+  "output_mode": "json",
+  "once": true,
+  "interval_seconds": 2,
+  "idle_threshold_seconds": 30,
+  "token_budget": 50000
+}

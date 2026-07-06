@@ -1,0 +1,5 @@
+{
+  "record_type": "kitty_context_resolution",
+  "source": "env",
+  "cwd": "/workspace/codex-mesh"
+}

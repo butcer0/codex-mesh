@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+	SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd)"
+	SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+	[[ "$SCRIPT_PATH" == /* ]] || SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd)"
+# shellcheck source=scripts/codex-mesh-lib.sh
+source "$SCRIPT_DIR/codex-mesh-lib.sh"
+
+usage() {
+	cat <<'USAGE'
+Usage: mesh init [--dry-run] [--json] [--prefix PREFIX] [--remote URL] DIR
+       mesh doctor [--json]
+       mesh agents [--json] [--idle-threshold SECONDS] [--mesh-root DIR]
+       mesh status [--json] [--idle-threshold SECONDS] [--mesh-root DIR]
+       mesh watch [--once] [--json|--ndjson] [--include-detached] [--interval SECONDS] [--idle-threshold SECONDS] [--mesh-root DIR]
+       mesh context bind --mesh-root DIR [--listen-on ADDRESS] [--json]
+       mesh context show|resolve [--mesh-root DIR] [--cwd DIR] [--json]
+       mesh goal check [--phase red-check|iteration|close] PREDICATE.json
+       mesh wave dispatch [--frontier READY.json] REQUEST.json
+       mesh wave status [--frontier READY.json] REQUEST.json
+       mesh workflow plan [--formula-dir DIR] [--run-id ID] REQUEST.json
+       mesh workflow run [--formula-dir DIR] [--run-id ID] REQUEST.json
+       mesh workflow status [--formula-dir DIR] [--run-id ID] REQUEST.json
+
+Expose active codex-mesh terminal agents from live kitty state plus transcript
+metadata, or join live agents with the Beads status snapshot. These commands do
+not write durable state. Watch renders one or more live snapshots for operators
+or tools. Init creates a Beads-backed mesh root without hardcoding a remote
+provider. Goal checks and wave dispatches evaluate local transport state and
+emit CUE-shaped JSON; Beads owns lifecycle updates. Workflow planning interprets
+Beads formulas into provider-neutral run plans before any live mutation exists.
+
+Default discipline (#OrchestrationDefault): substantive work decomposes into a
+Beads formula and dispatches bounded role waves; every task closes on a green
+goal predicate plus a result envelope. Solo execution is a named exception
+(conversational reply, single-read lookup, trivial mechanical edit, emergency
+transport recovery), not the default.
+USAGE
+}
+
+(($# >= 1)) || {
+	usage
+	exit 0
+}
+
+case "$1" in
+-h|--help)
+	usage
+	exit 0
+	;;
+init)
+	shift
+	codex_mesh_need python3
+	codex_mesh_need git
+	codex_mesh_need bd
+	"$SCRIPT_DIR/codex-mesh-init" "$@"
+	;;
+doctor)
+	shift
+	"$SCRIPT_DIR/codex-mesh-doctor" "$@"
+	;;
+agents)
+	shift
+	codex_mesh_need jq
+	codex_mesh_need python3
+	mesh_root="${CODEX_MESH_ROOT:-}"
+	agent_args=()
+	while (($# > 0)); do
+		case "$1" in
+		--mesh-root)
+			(($# >= 2)) || codex_mesh_die "mesh agents: --mesh-root requires a value"
+			mesh_root="$2"
+			shift 2
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			agent_args+=("$1")
+			shift
+			;;
+		esac
+	done
+	[[ -z "$mesh_root" ]] || mesh_root="$(codex_mesh_abs_dir "$mesh_root")"
+	codex_mesh_kitty_ls "$mesh_root" "$(pwd -P)" | "$SCRIPT_DIR/codex-mesh-agents" "${agent_args[@]}"
+	;;
+status)
+	shift
+	codex_mesh_need bd
+	codex_mesh_need python3
+	json_flag=()
+	idle_threshold=30
+	mesh_root="${CODEX_MESH_ROOT:-}"
+	while (($# > 0)); do
+		case "$1" in
+		--json)
+			json_flag=(--json)
+			shift
+			;;
+		--mesh-root)
+			(($# >= 2)) || codex_mesh_die "mesh status: --mesh-root requires a value"
+			mesh_root="$2"
+			shift 2
+			;;
+		--idle-threshold)
+			(($# >= 2)) || codex_mesh_die "mesh status: --idle-threshold requires a value"
+			idle_threshold="$2"
+			shift 2
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			codex_mesh_die "mesh status: unknown option: $1"
+			;;
+		esac
+	done
+	[[ -z "$mesh_root" ]] || mesh_root="$(codex_mesh_abs_dir "$mesh_root")"
+	tmpdir="$(mktemp -d)"
+	trap 'rm -rf "$tmpdir"' EXIT
+	codex_mesh_kitty_ls "$mesh_root" "$(pwd -P)" | "$SCRIPT_DIR/codex-mesh-agents" --json --idle-threshold "$idle_threshold" >"$tmpdir/agents.json"
+	codex_mesh_bd_status_snapshot >"$tmpdir/tasks.json"
+	"$SCRIPT_DIR/codex-mesh-status" "${json_flag[@]}" "$tmpdir/agents.json" "$tmpdir/tasks.json"
+	;;
+watch)
+	shift
+	codex_mesh_need bd
+	codex_mesh_need jq
+	codex_mesh_need python3
+	mode="table"
+	once=0
+	include_detached=0
+	interval=2
+	idle_threshold=30
+	mesh_root="${CODEX_MESH_ROOT:-}"
+	while (($# > 0)); do
+		case "$1" in
+		--json)
+			mode="json"
+			shift
+			;;
+		--ndjson)
+			mode="ndjson"
+			shift
+			;;
+		--once)
+			once=1
+			shift
+			;;
+		--include-detached)
+			include_detached=1
+			shift
+			;;
+		--interval)
+			(($# >= 2)) || codex_mesh_die "mesh watch: --interval requires a value"
+			interval="$2"
+			[[ "$interval" =~ ^[1-9][0-9]*$ ]] || codex_mesh_die "mesh watch: --interval must be a positive integer"
+			shift 2
+			;;
+		--idle-threshold)
+			(($# >= 2)) || codex_mesh_die "mesh watch: --idle-threshold requires a value"
+			idle_threshold="$2"
+			[[ "$idle_threshold" =~ ^[0-9]+$ ]] || codex_mesh_die "mesh watch: --idle-threshold must be a non-negative integer"
+			shift 2
+			;;
+		--mesh-root)
+			(($# >= 2)) || codex_mesh_die "mesh watch: --mesh-root requires a value"
+			mesh_root="$2"
+			shift 2
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			codex_mesh_die "mesh watch: unknown option: $1"
+			;;
+		esac
+	done
+	[[ -z "$mesh_root" ]] || mesh_root="$(codex_mesh_abs_dir "$mesh_root")"
+	tmpdir="$(mktemp -d)"
+	trap 'rm -rf "$tmpdir"' EXIT
+	while :; do
+		codex_mesh_kitty_ls "$mesh_root" "$(pwd -P)" | "$SCRIPT_DIR/codex-mesh-agents" --json --idle-threshold "$idle_threshold" >"$tmpdir/agents.json"
+		workspace_args=()
+		[[ -n "$mesh_root" ]] && workspace_args+=(--mesh-root "$mesh_root")
+		"$SCRIPT_DIR/codex-mesh-workspaces" "${workspace_args[@]}" >"$tmpdir/workspaces.json"
+		codex_mesh_kitty_context_json "$mesh_root" "$(pwd -P)" >"$tmpdir/kitty-context.json"
+		if [[ "$mode" == "table" && -t 1 && "$once" != "1" ]]; then
+			printf '\033[H\033[2J'
+		fi
+		watch_args=(--mode "$mode" --idle-threshold "$idle_threshold")
+		((include_detached == 1)) && watch_args+=(--include-detached)
+		"$SCRIPT_DIR/codex-mesh-watch" "${watch_args[@]}" --kitty-context "$tmpdir/kitty-context.json" "$tmpdir/agents.json" "$tmpdir/workspaces.json"
+		((once == 1)) && break
+		sleep "$interval"
+	done
+	;;
+context)
+	shift
+	codex_mesh_need python3
+	"$SCRIPT_DIR/codex-mesh-context" "$@"
+	;;
+goal)
+	shift
+	codex_mesh_need python3
+	"$SCRIPT_DIR/codex-mesh-goal" "$@"
+	;;
+wave)
+	shift
+	codex_mesh_need python3
+	"$SCRIPT_DIR/codex-mesh-wave" "$@"
+	;;
+workflow)
+	shift
+	codex_mesh_need python3
+	"$SCRIPT_DIR/codex-mesh-workflow" "$@"
+	;;
+*)
+	codex_mesh_die "mesh: unknown command: $1"
+	;;
+esac

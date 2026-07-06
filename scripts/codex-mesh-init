@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+
+
+PREFIX_RE = re.compile(r"^[a-z][a-z0-9]*$")
+
+
+def die(message):
+    print(message, file=sys.stderr)
+    raise SystemExit(1)
+
+
+def abs_path(path):
+    return os.path.abspath(os.path.expanduser(path))
+
+
+def default_prefix(path):
+    name = os.path.basename(os.path.normpath(path)) or "mesh"
+    prefix = re.sub(r"[^a-z0-9]+", "", name.lower())
+    if not prefix or not prefix[0].isalpha():
+        prefix = "mesh"
+    return prefix
+
+
+def validate_prefix(prefix):
+    if not PREFIX_RE.match(prefix):
+        die(f"mesh init: invalid Beads prefix: {prefix}")
+
+
+def run(argv, cwd=None, dry_run=False):
+    record = {
+        "argv": argv,
+        "status": "planned" if dry_run else "ran",
+    }
+    if cwd:
+        record["cwd"] = cwd
+    if dry_run:
+        return record
+    proc = subprocess.run(
+        argv,
+        cwd=cwd,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    record["exit_code"] = proc.returncode
+    if proc.stdout.strip():
+        record["stdout"] = proc.stdout.strip()
+    if proc.stderr.strip():
+        record["stderr"] = proc.stderr.strip()
+    if proc.returncode != 0:
+        print(record.get("stderr") or record.get("stdout") or f"command failed: {argv}", file=sys.stderr)
+        raise SystemExit(proc.returncode)
+    return record
+
+
+def is_git_repo(path):
+    proc = subprocess.run(
+        ["git", "-C", path, "rev-parse", "--show-toplevel"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return proc.returncode == 0 and os.path.abspath(proc.stdout.strip()) == path
+
+
+def build_bd_init_args(root, prefix, remote):
+    argv = [
+        "bd",
+        "init",
+        "--non-interactive",
+        "--init-if-missing",
+        "--prefix",
+        prefix,
+        "--skip-agents",
+        "--skip-hooks",
+    ]
+    if remote:
+        argv.extend(["--remote", remote])
+    return argv
+
+
+def build_result(args):
+    root = abs_path(args.mesh_root)
+    prefix = args.prefix or default_prefix(root)
+    validate_prefix(prefix)
+
+    result = {
+        "record_type": "mesh_init",
+        "mesh_root": root,
+        "prefix": prefix,
+        "dry_run": args.dry_run,
+        "commands": [],
+    }
+    if args.remote:
+        result["remote_url"] = args.remote
+        result["remote_source"] = "operator-config"
+
+    root_exists = os.path.isdir(root)
+    beads_exists = os.path.isdir(os.path.join(root, ".beads"))
+    git_exists = root_exists and is_git_repo(root)
+
+    if not root_exists:
+        result["commands"].append(run(["mkdir", "-p", root], dry_run=args.dry_run))
+        if not args.dry_run:
+            root_exists = True
+
+    if not git_exists:
+        result["commands"].append(run(["git", "init", root], dry_run=args.dry_run))
+
+    if beads_exists:
+        result["commands"].append({
+            "argv": build_bd_init_args(root, prefix, args.remote),
+            "cwd": root,
+            "status": "skipped",
+            "reason": ".beads already exists",
+        })
+    else:
+        result["commands"].append(run(build_bd_init_args(root, prefix, args.remote), cwd=root, dry_run=args.dry_run))
+
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Initialize a Beads-backed codex-mesh root")
+    parser.add_argument("mesh_root", help="mesh root directory")
+    parser.add_argument("--prefix", help="Beads issue prefix for the mesh-level coordinator")
+    parser.add_argument("--remote", help="operator-provided Beads/Dolt remote URL")
+    parser.add_argument("--dry-run", action="store_true", help="print planned commands without running them")
+    parser.add_argument("--json", action="store_true", help="emit JSON")
+    args = parser.parse_args()
+
+    result = build_result(args)
+    if args.json or args.dry_run:
+        json.dump(result, sys.stdout, indent=2, sort_keys=True)
+        print()
+        return
+
+    print(f"mesh root initialized: {result['mesh_root']}")
+
+
+if __name__ == "__main__":
+    main()

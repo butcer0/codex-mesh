@@ -1,0 +1,20 @@
+{
+  "record_type": "orchestration_default",
+  "default_mode": "solo",
+  "solo_requires_named_exception": true,
+  "solo_exceptions": [
+    "conversational-reply",
+    "single-read-lookup",
+    "trivial-mechanical-edit",
+    "emergency-transport-recovery"
+  ],
+  "decomposition": "beads-formula",
+  "dispatch": "mesh wave dispatch",
+  "close_policy": "green-predicate-and-result-envelope",
+  "bounded": true,
+  "feature_formula": "cue-first-feature",
+  "review_formula": "review-wave",
+  "verdict_formula": "judge-panel",
+  "convergence_formula": "loop-until-dry",
+  "closing_formula": "completeness-critic"
+}

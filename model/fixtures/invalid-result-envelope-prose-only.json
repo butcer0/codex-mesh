@@ -1,0 +1,11 @@
+{
+  "record_type": "result_envelope",
+  "task": "mesh-sml",
+  "session_id": "7",
+  "address": "codex-implementation-1",
+  "role": "implementation",
+  "status": "completed",
+  "completed_at_unix": 1783278000,
+  "evidence": [],
+  "prose_only": "I did the work."
+}

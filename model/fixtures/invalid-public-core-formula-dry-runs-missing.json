@@ -1,0 +1,59 @@
+{
+  "record_type": "public_core_boundary",
+  "project": "codex-mesh",
+  "molecule": "mesh-mol-9ns",
+  "lab_task": "lab-w7f.6",
+  "live_mutation": false,
+  "provider_boundary": {
+    "authority_bead": "mesh-zm6",
+    "launch_contract": "provider-neutral",
+    "core_secret_injection": "forbidden",
+    "private_plugin_location": "outside-public-core",
+    "private_plugin_may_implement": true,
+    "forbidden": {
+      "operator_control_plane": {"status": "forbidden", "evidence": "blocked"},
+      "credential_hotpath": {"status": "forbidden", "evidence": "blocked"},
+      "password_manager": {"status": "forbidden", "evidence": "blocked"},
+      "operator_git_service": {"status": "forbidden", "evidence": "blocked"},
+      "operator_task_store": {"status": "forbidden", "evidence": "blocked"},
+      "operator_task_remotes": {"status": "forbidden", "evidence": "blocked"},
+      "credential_references": {"status": "forbidden", "evidence": "blocked"},
+      "credential_values": {"status": "forbidden", "evidence": "blocked"},
+      "operator_validation_artifacts": {"status": "forbidden", "evidence": "blocked"},
+      "operator_session_logs": {"status": "forbidden", "evidence": "blocked"},
+      "service_account_env": {"status": "forbidden", "evidence": "blocked"}
+    }
+  },
+  "workflow_boundary": {
+    "authority_bead": "mesh-dj8",
+    "runner_scope": "bounded-dry-run",
+    "hidden_dispatch": "forbidden",
+    "provider_specific_fields": "forbidden",
+    "close_policy": "green-predicate-and-result-envelope",
+    "formula_dry_runs_required": true,
+    "provider_secret_rejection": "scripts/codex-mesh-workflow"
+  },
+  "public_artifact_policy": {
+    "private_authority": false,
+    "private_launch_support": false,
+    "operator_provisioning": false,
+    "operator_validation_artifacts": "forbidden",
+    "operator_session_logs": "forbidden",
+    "local_runtime_logs": "not-public-artifact",
+    "log_paths_authority": false
+  },
+  "verification": {
+    "script": "./scripts/verify.sh",
+    "valid_fixture": "model/fixtures/valid-public-core-boundary.json",
+    "provider_secret_rejection_fixture": "model/fixtures/invalid-workflow-run-provider-secret.json",
+    "workflow_baseline": "mesh-dj8",
+    "formula_dry_runs": ["cue-first-feature", "review-wave", "judge-panel", "loop-until-dry"],
+    "adversarial_fixtures": {
+      "secret_ref": "model/fixtures/invalid-public-core-secret-ref.json",
+      "private_plugin_in_core": "model/fixtures/invalid-public-core-private-plugin-in-core.json",
+      "missing_operator_session_logs": "model/fixtures/invalid-public-core-missing-operator-session-logs.json",
+      "workflow_authority": "model/fixtures/invalid-public-core-workflow-authority.json",
+      "formula_dry_runs_missing": "model/fixtures/invalid-public-core-formula-dry-runs-missing.json"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "record_type": "goal_predicate",
+  "task": "mesh-t8h.4",
+  "description": "Mutable predicate should fail.",
+  "frozen": false,
+  "red_check_required": true,
+  "close_requires_green": true,
+  "check": {
+    "kind": "command",
+    "cwd": "/workspace/codex-mesh",
+    "command": ["true"],
+    "expected_exit_code": 0,
+    "side_effect_free": true
+  },
+  "adversarial": [
+    {
+      "label": "mutable",
+      "reason": "Mutable predicate must not dispatch.",
+      "expected_status": "red"
+    }
+  ],
+  "mutable": true
+}

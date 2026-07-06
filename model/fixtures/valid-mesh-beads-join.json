@@ -1,0 +1,138 @@
+{
+  "exposure": "read-time-join",
+  "beads_command": "bd list --status=open,in_progress,hooked --json",
+  "generated_at_unix": 1783278000,
+  "agents": [
+    {
+      "exposure": "live-query",
+      "session_id": "7",
+      "window_id": 7,
+      "address": "codex-implementation-1",
+      "role": "implementation",
+      "parent": "codex-parent-1",
+      "task": "mesh-1az.4",
+      "cwd": "/workspace/codex-mesh",
+      "pid": 12345,
+      "cmdline": ["codex", "--yolo"],
+      "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",
+      "transcript_exists": true,
+      "transcript_bytes": 4096,
+      "last_output_unix": 1783277997,
+      "idle_seconds": 3,
+      "working_state": "active"
+    },
+    {
+      "exposure": "live-query",
+      "session_id": "8",
+      "window_id": 8,
+      "address": "codex-reviewer-1",
+      "role": "reviewer",
+      "cwd": "/workspace/codex-mesh",
+      "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/8.ansi",
+      "transcript_exists": false,
+      "working_state": "unknown"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "mesh-1az.4",
+      "title": "mint-cue: write and verify the join contract",
+      "status": "in_progress",
+      "priority": 1,
+      "issue_type": "task",
+      "assignee": "galeavenworth-personal",
+      "parent": "mesh-1az",
+      "dependency_count": 0,
+      "dependent_count": 0,
+      "comment_count": 0
+    },
+    {
+      "id": "mesh-open",
+      "title": "undispatched work",
+      "status": "open",
+      "priority": 2,
+      "issue_type": "task"
+    },
+    {
+      "id": "mesh-hooked",
+      "title": "hooked work with no live window",
+      "status": "hooked",
+      "priority": 2,
+      "issue_type": "task"
+    }
+  ],
+  "records": [
+    {
+      "classification": "live_agent_with_task",
+      "task_id": "mesh-1az.4",
+      "agent": {
+        "exposure": "live-query",
+        "session_id": "7",
+        "window_id": 7,
+        "address": "codex-implementation-1",
+        "role": "implementation",
+        "parent": "codex-parent-1",
+        "task": "mesh-1az.4",
+        "cwd": "/workspace/codex-mesh",
+        "pid": 12345,
+        "cmdline": ["codex", "--yolo"],
+        "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",
+        "transcript_exists": true,
+        "transcript_bytes": 4096,
+        "last_output_unix": 1783277997,
+        "idle_seconds": 3,
+        "working_state": "active"
+      },
+      "task": {
+        "id": "mesh-1az.4",
+        "title": "mint-cue: write and verify the join contract",
+        "status": "in_progress",
+        "priority": 1,
+        "issue_type": "task",
+        "assignee": "galeavenworth-personal",
+        "parent": "mesh-1az",
+        "dependency_count": 0,
+        "dependent_count": 0,
+        "comment_count": 0
+      }
+    },
+    {
+      "classification": "live_agent_without_task",
+      "agent": {
+        "exposure": "live-query",
+        "session_id": "8",
+        "window_id": 8,
+        "address": "codex-reviewer-1",
+        "role": "reviewer",
+        "cwd": "/workspace/codex-mesh",
+        "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/8.ansi",
+        "transcript_exists": false,
+        "working_state": "unknown"
+      }
+    },
+    {
+      "classification": "task_without_live_session",
+      "task_id": "mesh-open",
+      "task": {
+        "id": "mesh-open",
+        "title": "undispatched work",
+        "status": "open",
+        "priority": 2,
+        "issue_type": "task"
+      },
+      "resume_signal": false
+    },
+    {
+      "classification": "task_without_live_session",
+      "task_id": "mesh-hooked",
+      "task": {
+        "id": "mesh-hooked",
+        "title": "hooked work with no live window",
+        "status": "hooked",
+        "priority": 2,
+        "issue_type": "task"
+      },
+      "resume_signal": true
+    }
+  ]
+}

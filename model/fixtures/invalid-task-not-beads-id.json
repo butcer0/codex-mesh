@@ -1,0 +1,11 @@
+{
+  "command": "spawn",
+  "backend": "kitty",
+  "address": "codex-implementation-1",
+  "role": "implementation",
+  "parent": "codex-parent-1",
+  "task": "local task name",
+  "workdir": "/workspace/codex-mesh",
+  "message": "Continue the contract work.",
+  "keep_parent": true
+}

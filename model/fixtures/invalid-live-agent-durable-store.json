@@ -1,0 +1,10 @@
+{
+  "exposure": "live-query",
+  "durable_store": "sqlite",
+  "session_id": "7",
+  "window_id": 7,
+  "address": "codex-implementation-1",
+  "cwd": "/workspace/codex-mesh",
+  "transcript_exists": true,
+  "working_state": "active"
+}

@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+import sys
+import time
+
+
+BEADS_ISSUE_RE = re.compile(r"^[a-z][a-z0-9]*-[a-z0-9]+(-[a-z0-9]+)*(\.[0-9]+)*$")
+
+
+def transcript_dir():
+    if os.environ.get("CODEX_MESH_TRANSCRIPT_DIR"):
+        return os.environ["CODEX_MESH_TRANSCRIPT_DIR"]
+    state_home = os.environ.get("XDG_STATE_HOME")
+    if not state_home:
+        home = os.environ.get("HOME", "")
+        state_home = os.path.join(home, ".local", "state")
+    return os.path.join(state_home, "codex-mesh", "transcripts")
+
+
+def iter_windows(kitty_tree):
+    for os_window in kitty_tree:
+        for tab in os_window.get("tabs", []):
+            for window in tab.get("windows", []):
+                user_vars = window.get("user_vars", {})
+                if user_vars.get("codex_addr"):
+                    yield window
+
+
+def transcript_path_for(window, base_dir):
+    user_vars = window.get("user_vars", {})
+    if user_vars.get("codex_transcript"):
+        return user_vars["codex_transcript"]
+    session_id = str(user_vars.get("codex_session") or window.get("id"))
+    return os.path.join(base_dir, f"{session_id}.ansi")
+
+
+def snapshot(window, base_dir, now, idle_threshold):
+    user_vars = window.get("user_vars", {})
+    window_id = int(window["id"])
+    session_id = str(user_vars.get("codex_session") or window_id)
+    transcript_path = transcript_path_for(window, base_dir)
+
+    transcript_exists = os.path.exists(transcript_path)
+    transcript_bytes = None
+    last_output_unix = None
+    idle_seconds = None
+    working_state = "unknown"
+
+    if transcript_exists:
+        stat = os.stat(transcript_path)
+        transcript_bytes = stat.st_size
+        last_output_unix = int(stat.st_mtime)
+        idle_seconds = max(0, int(now - stat.st_mtime))
+        working_state = "active" if idle_seconds <= idle_threshold else "idle"
+
+    out = {
+        "exposure": "live-query",
+        "session_id": session_id,
+        "window_id": window_id,
+        "address": user_vars["codex_addr"],
+        "cwd": window.get("cwd") or "",
+        "working_state": working_state,
+        "transcript_path": transcript_path,
+        "transcript_exists": transcript_exists,
+    }
+
+    task = user_vars.get("codex_task")
+    if task and not BEADS_ISSUE_RE.match(task):
+        task = None
+
+    optional = {
+        "role": user_vars.get("codex_role"),
+        "parent": user_vars.get("codex_parent"),
+        "task": task,
+        "pid": window.get("pid"),
+        "cmdline": window.get("cmdline"),
+        "transcript_bytes": transcript_bytes,
+        "last_output_unix": last_output_unix,
+        "idle_seconds": idle_seconds,
+    }
+    out.update({key: value for key, value in optional.items() if value is not None})
+    return out
+
+
+def print_table(agents):
+    headers = ["SESSION", "ADDR", "ROLE", "STATE", "IDLE", "TASK", "CWD"]
+    rows = []
+    for agent in agents:
+        idle = "-"
+        if agent.get("idle_seconds") is not None:
+            idle = f"{agent['idle_seconds']}s"
+        rows.append([
+            agent["session_id"],
+            agent["address"],
+            agent.get("role", "-"),
+            agent["working_state"],
+            idle,
+            agent.get("task", "-"),
+            agent.get("cwd", "-"),
+        ])
+
+    widths = [len(header) for header in headers]
+    for row in rows:
+        widths = [max(width, len(value)) for width, value in zip(widths, row)]
+
+    print("  ".join(header.ljust(width) for header, width in zip(headers, widths)))
+    for row in rows:
+        print("  ".join(value.ljust(width) for value, width in zip(row, widths)))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Expose active codex-mesh terminal agents")
+    parser.add_argument("--json", action="store_true", help="emit JSON")
+    parser.add_argument("--idle-threshold", type=int, default=30, help="seconds since transcript output before an agent is idle")
+    args = parser.parse_args()
+
+    kitty_tree = json.load(sys.stdin)
+    base_dir = transcript_dir()
+    now = float(os.environ.get("CODEX_MESH_NOW", time.time()))
+    agents = [snapshot(window, base_dir, now, args.idle_threshold) for window in iter_windows(kitty_tree)]
+    agents.sort(key=lambda agent: int(agent["session_id"]))
+
+    if args.json:
+        json.dump({"agents": agents}, sys.stdout, indent=2, sort_keys=True)
+        print()
+    else:
+        print_table(agents)
+
+
+if __name__ == "__main__":
+    main()

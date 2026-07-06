@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "tabs": [
+      {
+        "id": 1,
+        "windows": [
+          {
+            "id": 7,
+            "title": "first",
+            "cwd": "/tmp",
+            "user_vars": {
+              "codex_addr": "codex-implementation-1"
+            }
+          },
+          {
+            "id": 8,
+            "title": "second",
+            "cwd": "/tmp",
+            "user_vars": {
+              "codex_addr": "codex-implementation-1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+	cat <<'USAGE'
+Usage: codex-mesh-doctor [--json]
+
+Check codex-mesh runtime and verification prerequisites. This command reports
+missing dependencies; it never installs third-party tools.
+USAGE
+}
+
+json=0
+while (($# > 0)); do
+	case "$1" in
+	--json)
+		json=1
+		shift
+		;;
+	-h|--help)
+		usage
+		exit 0
+		;;
+	*)
+		echo "codex-mesh-doctor: unknown option: $1" >&2
+		exit 2
+		;;
+	esac
+done
+
+json_escape() {
+	local value="${1//\\/\\\\}"
+	value="${value//\"/\\\"}"
+	value="${value//$'\n'/\\n}"
+	printf '%s' "$value"
+}
+
+dep_names=(bash python3 jq git bd kitty codex cue)
+dep_uses=(runtime runtime runtime runtime runtime runtime runtime verification)
+dep_purposes=(
+	"Run shell command adapters and Makefile recipes."
+	"Run JSON adapters for agents, watch, workspaces, context, goals, waves, and init."
+	"Filter command JSON in verification and operator workflows."
+	"Find the repository root and initialize mesh-root coordinator repositories."
+	"Own durable Beads task state, formulas, readiness, and remote sync."
+	"Provide the live terminal transport and remote-control surface."
+	"Run Codex agents inside addressed mesh terminal sessions."
+	"Verify CUE contracts and fail-closed fixtures."
+)
+
+dep_statuses=()
+dep_paths=()
+runtime_ready=1
+verification_ready=1
+
+for i in "${!dep_names[@]}"; do
+	name="${dep_names[$i]}"
+	required_for="${dep_uses[$i]}"
+	if path="$(command -v "$name" 2>/dev/null)"; then
+		dep_statuses+=("found")
+		dep_paths+=("$path")
+	else
+		dep_statuses+=("missing")
+		dep_paths+=("")
+		if [[ "$required_for" == "runtime" ]]; then
+			runtime_ready=0
+		else
+			verification_ready=0
+		fi
+	fi
+done
+
+if ((json == 1)); then
+	printf '{\n'
+	printf '  "record_type": "install_doctor",\n'
+	printf '  "scope": "codex-mesh",\n'
+	printf '  "dependency_policy": "prerequisites-explicit",\n'
+	printf '  "auto_install": false,\n'
+	printf '  "install_command": "make install",\n'
+	printf '  "doctor_command": "mesh doctor",\n'
+	printf '  "runtime_ready": %s,\n' "$([[ $runtime_ready == 1 ]] && echo true || echo false)"
+	printf '  "verification_ready": %s,\n' "$([[ $verification_ready == 1 ]] && echo true || echo false)"
+	printf '  "dependencies": [\n'
+	for i in "${!dep_names[@]}"; do
+		((i > 0)) && printf ',\n'
+		printf '    {\n'
+		printf '      "name": "%s",\n' "$(json_escape "${dep_names[$i]}")"
+		printf '      "required_for": "%s",\n' "$(json_escape "${dep_uses[$i]}")"
+		printf '      "status": "%s",\n' "$(json_escape "${dep_statuses[$i]}")"
+		if [[ "${dep_statuses[$i]}" == "found" ]]; then
+			printf '      "path": "%s",\n' "$(json_escape "${dep_paths[$i]}")"
+		fi
+		printf '      "purpose": "%s"\n' "$(json_escape "${dep_purposes[$i]}")"
+		printf '    }'
+	done
+	printf '\n  ]\n'
+	printf '}\n'
+else
+	printf 'codex-mesh doctor\n'
+	printf 'policy: prerequisites-explicit; third-party dependencies are not installed by make install\n'
+	printf 'runtime_ready=%s verification_ready=%s\n' "$runtime_ready" "$verification_ready"
+	printf '\n%-8s %-12s %-8s %s\n' "STATUS" "REQUIRED_FOR" "NAME" "PATH"
+	for i in "${!dep_names[@]}"; do
+		path="${dep_paths[$i]:--}"
+		printf '%-8s %-12s %-8s %s\n' "${dep_statuses[$i]}" "${dep_uses[$i]}" "${dep_names[$i]}" "$path"
+	done
+fi
+
+if ((runtime_ready == 0 || verification_ready == 0)); then
+	exit 1
+fi

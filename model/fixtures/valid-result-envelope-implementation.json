@@ -1,0 +1,33 @@
+{
+  "record_type": "result_envelope",
+  "task": "mesh-sml",
+  "session_id": "7",
+  "address": "codex-implementation-1",
+  "role": "implementation",
+  "status": "completed",
+  "completed_at_unix": 1783278000,
+  "evidence": [
+    {
+      "kind": "command",
+      "label": "verify gate",
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "output_excerpt": "passed"
+    }
+  ],
+  "payload": {
+    "kind": "implementation",
+    "summary": "Added result envelope contract and fixtures.",
+    "changed_files": [
+      "/workspace/codex-mesh/model/contract.cue"
+    ],
+    "verification": [
+      {
+        "kind": "command",
+        "label": "cue vet result envelope",
+        "command": "cue vet model/fixtures/valid-result-envelope-implementation.json model/contract.cue -d #ResultEnvelope",
+        "exit_code": 0
+      }
+    ]
+  }
+}

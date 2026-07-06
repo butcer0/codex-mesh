@@ -1,0 +1,49 @@
+{
+  "parent_task": "mesh-t8h",
+  "integration_predicate": {
+    "record_type": "goal_predicate",
+    "task": "mesh-t8h",
+    "description": "The integrated goal-loop contract and offline proof are verified.",
+    "frozen": true,
+    "red_check_required": true,
+    "close_requires_green": true,
+    "check": {
+      "kind": "command",
+      "cwd": "/workspace/codex-mesh",
+      "command": ["./scripts/verify.sh"],
+      "expected_exit_code": 0,
+      "side_effect_free": true
+    },
+    "adversarial": [
+      {
+        "label": "invalid fixture",
+        "reason": "A broken adversarial fixture must keep the integration predicate red.",
+        "expected_status": "red"
+      }
+    ]
+  },
+  "child_predicates": [
+    {
+      "record_type": "goal_predicate",
+      "task": "mesh-t8h.4",
+      "description": "The goal loop CUE fixtures verify.",
+      "frozen": true,
+      "red_check_required": true,
+      "close_requires_green": true,
+      "check": {
+        "kind": "command",
+        "cwd": "/workspace/codex-mesh",
+        "command": ["cue", "vet", "model/fixtures/valid-goal-predicate.json", "model/contract.cue", "-d", "#GoalPredicate"],
+        "expected_exit_code": 0,
+        "side_effect_free": true
+      },
+      "adversarial": [
+        {
+          "label": "mutable predicate",
+          "reason": "A mutable predicate must fail closed.",
+          "expected_status": "red"
+        }
+      ]
+    }
+  ]
+}

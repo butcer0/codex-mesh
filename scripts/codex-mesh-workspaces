@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import subprocess
+import sys
+
+
+BEADS_COMMAND = "bd list --status=open,in_progress,hooked --json"
+BEADS_WORKSPACE_COMMAND = "bd -C <workspace> list --status=open,in_progress,hooked --json"
+
+
+def abs_path(path):
+    return os.path.abspath(os.path.expanduser(path))
+
+
+def workspace_name(path):
+    name = os.path.basename(os.path.normpath(path))
+    return name or "workspace"
+
+
+def load_fixture(path):
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def run_bd_list(root):
+    proc = subprocess.run(
+        ["bd", "-C", root, "list", "--status=open,in_progress,hooked", "--json"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if proc.returncode != 0:
+        message = (proc.stderr or proc.stdout or "bd list failed").strip().splitlines()
+        return None, message[0] if message else "bd list failed"
+    try:
+        tasks = json.loads(proc.stdout or "[]")
+    except json.JSONDecodeError as exc:
+        return None, f"bd list returned invalid JSON: {exc}"
+    if not isinstance(tasks, list):
+        return None, "bd list returned non-list JSON"
+    return tasks, None
+
+
+def normalize_task(task, workspace):
+    out = {
+        "id": task["id"],
+        "title": task.get("title") or "-",
+        "status": task["status"],
+        "workspace": workspace["name"],
+        "workspace_root": workspace["root"],
+        "beads_status": workspace["beads_status"],
+    }
+    for field in (
+        "priority",
+        "issue_type",
+        "assignee",
+        "parent",
+        "dependency_count",
+        "dependent_count",
+        "comment_count",
+    ):
+        if field in task and task[field] is not None:
+            out[field] = task[field]
+    return out
+
+
+def workspace_from_root(root, role="project"):
+    workspace = {
+        "name": workspace_name(root),
+        "root": root,
+        "workspace_role": role,
+        "beads_status": "missing",
+        "task_count": 0,
+    }
+    if not os.path.isdir(os.path.join(root, ".beads")):
+        return workspace, []
+
+    workspace["beads_status"] = "available"
+    tasks, error = run_bd_list(root)
+    if error:
+        if "no beads project found" in error or "no beads database found" in error:
+            workspace["beads_status"] = "missing"
+            return workspace, []
+        workspace["beads_status"] = "error"
+        workspace["error"] = error
+        return workspace, []
+
+    workspace["task_count"] = len(tasks)
+    return workspace, [normalize_task(task, workspace) for task in tasks]
+
+
+def workspace_roots(mesh_root):
+    if mesh_root:
+        root = abs_path(mesh_root)
+        if not os.path.isdir(root):
+            return root, []
+        roots = []
+        if os.path.isdir(os.path.join(root, ".beads")):
+            roots.append((root, "mesh-root"))
+        with os.scandir(root) as entries:
+            for entry in entries:
+                if entry.name.startswith("."):
+                    continue
+                if entry.is_dir(follow_symlinks=False):
+                    roots.append((entry.path, "project"))
+        return root, sorted(((abs_path(path), role) for path, role in roots), key=lambda item: item[0])
+    return None, [(abs_path(os.getcwd()), "project")]
+
+
+def from_bd_list_fixture(path):
+    cwd = abs_path(os.getcwd())
+    workspace = {
+        "name": workspace_name(cwd),
+        "root": cwd,
+        "beads_status": "available",
+        "task_count": 0,
+    }
+    tasks = load_fixture(path)
+    normalized = [normalize_task(task, workspace) for task in tasks]
+    workspace["task_count"] = len(normalized)
+    return {
+        "beads_command": BEADS_COMMAND,
+        "workspace_scan_depth": 1,
+        "workspaces": [workspace],
+        "tasks": normalized,
+    }
+
+
+def discover(mesh_root):
+    resolved_root, roots = workspace_roots(mesh_root)
+    payload = {
+        "beads_command": BEADS_WORKSPACE_COMMAND if resolved_root else BEADS_COMMAND,
+        "workspace_scan_depth": 1,
+        "workspaces": [],
+        "tasks": [],
+    }
+    if resolved_root:
+        payload["mesh_root"] = resolved_root
+    for root, role in roots:
+        workspace, tasks = workspace_from_root(root, role)
+        payload["workspaces"].append(workspace)
+        payload["tasks"].extend(tasks)
+    return payload
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Discover codex-mesh watch workspaces")
+    parser.add_argument("--mesh-root", help="parent directory whose direct children are mesh workspaces")
+    args = parser.parse_args()
+
+    if os.environ.get("CODEX_MESH_WORKSPACES_FILE"):
+        payload = load_fixture(os.environ["CODEX_MESH_WORKSPACES_FILE"])
+    elif os.environ.get("CODEX_MESH_BD_LIST_FILE"):
+        payload = from_bd_list_fixture(os.environ["CODEX_MESH_BD_LIST_FILE"])
+    else:
+        mesh_root = args.mesh_root or os.environ.get("CODEX_MESH_ROOT")
+        payload = discover(mesh_root)
+
+    json.dump(payload, sys.stdout, indent=2, sort_keys=True)
+    print()
+
+
+if __name__ == "__main__":
+    main()

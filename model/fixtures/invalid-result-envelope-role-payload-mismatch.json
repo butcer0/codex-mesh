@@ -1,0 +1,23 @@
+{
+  "record_type": "result_envelope",
+  "task": "mesh-sml",
+  "session_id": "8",
+  "address": "codex-reviewer-1",
+  "role": "reviewer",
+  "status": "completed",
+  "completed_at_unix": 1783278000,
+  "evidence": [],
+  "payload": {
+    "kind": "implementation",
+    "summary": "Reviewer returned an implementation payload.",
+    "changed_files": [],
+    "verification": [
+      {
+        "kind": "command",
+        "label": "verify",
+        "command": "./scripts/verify.sh",
+        "exit_code": 0
+      }
+    ]
+  }
+}

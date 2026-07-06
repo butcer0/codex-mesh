@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import sys
+import time
+
+
+BEADS_COMMAND = "bd list --status=open,in_progress,hooked --json"
+AGENT_FIELDS = (
+    "exposure",
+    "session_id",
+    "window_id",
+    "address",
+    "role",
+    "parent",
+    "task",
+    "cwd",
+    "pid",
+    "transcript_path",
+    "transcript_exists",
+    "transcript_bytes",
+    "last_output_unix",
+    "idle_seconds",
+    "working_state",
+)
+TASK_FIELDS = (
+    "id",
+    "title",
+    "status",
+    "priority",
+    "issue_type",
+    "assignee",
+    "parent",
+    "dependency_count",
+    "dependent_count",
+    "comment_count",
+)
+
+
+def load_json(path):
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def task_title(task):
+    return task.get("title") or "-"
+
+
+def normalize_agent(agent):
+    return {field: agent[field] for field in AGENT_FIELDS if field in agent and agent[field] is not None}
+
+
+def normalize_task(task):
+    return {field: task[field] for field in TASK_FIELDS if field in task and task[field] is not None}
+
+
+def make_record_for_agent(agent, tasks_by_id):
+    task_id = agent.get("task")
+    if task_id and task_id in tasks_by_id:
+        return {
+            "classification": "live_agent_with_task",
+            "task_id": task_id,
+            "agent": agent,
+            "task": tasks_by_id[task_id],
+        }
+
+    record = {
+        "classification": "live_agent_without_task",
+        "agent": agent,
+    }
+    if task_id:
+        record["task_id"] = task_id
+    return record
+
+
+def make_record_for_task(task):
+    status = task.get("status")
+    return {
+        "classification": "task_without_live_session",
+        "task_id": task["id"],
+        "task": task,
+        "resume_signal": status in ("in_progress", "hooked"),
+    }
+
+
+def join(agents_payload, tasks_payload):
+    agents = [normalize_agent(agent) for agent in agents_payload.get("agents", [])]
+    tasks = [normalize_task(task) for task in tasks_payload]
+    tasks_by_id = {task["id"]: task for task in tasks}
+    claimed_task_ids = set()
+    records = []
+
+    for agent in agents:
+        record = make_record_for_agent(agent, tasks_by_id)
+        if record["classification"] == "live_agent_with_task":
+            claimed_task_ids.add(record["task_id"])
+        records.append(record)
+
+    for task in tasks:
+        if task["id"] not in claimed_task_ids:
+            records.append(make_record_for_task(task))
+
+    return {
+        "exposure": "read-time-join",
+        "beads_command": BEADS_COMMAND,
+        "generated_at_unix": int(time.time()),
+        "agents": agents,
+        "tasks": tasks,
+        "records": records,
+    }
+
+
+def print_table(payload):
+    headers = ["CLASSIFICATION", "TASK", "SESSION", "ADDR", "STATE", "RESUME", "TITLE"]
+    rows = []
+    for record in payload["records"]:
+        agent = record.get("agent") or {}
+        task = record.get("task") or {}
+        rows.append([
+            record["classification"],
+            record.get("task_id", "-"),
+            agent.get("session_id", "-"),
+            agent.get("address", "-"),
+            agent.get("working_state", "-"),
+            str(record.get("resume_signal", "-")).lower(),
+            task_title(task),
+        ])
+
+    widths = [len(header) for header in headers]
+    for row in rows:
+        widths = [max(width, len(value)) for width, value in zip(widths, row)]
+
+    print("  ".join(header.ljust(width) for header, width in zip(headers, widths)))
+    for row in rows:
+        print("  ".join(value.ljust(width) for value, width in zip(row, widths)))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Join live codex-mesh agents with Beads status")
+    parser.add_argument("--json", action="store_true", help="emit JSON")
+    parser.add_argument("agents_json", help="mesh agents JSON payload")
+    parser.add_argument("tasks_json", help="bd list JSON payload")
+    args = parser.parse_args()
+
+    payload = join(load_json(args.agents_json), load_json(args.tasks_json))
+    if args.json:
+        json.dump(payload, sys.stdout, indent=2, sort_keys=True)
+        print()
+    else:
+        print_table(payload)
+
+
+if __name__ == "__main__":
+    main()

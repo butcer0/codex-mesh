@@ -1,0 +1,8 @@
+{
+  "record_type": "kitty_context_resolution",
+  "source": "mesh-root-config",
+  "mesh_root": "/workspace",
+  "cwd": "/workspace/codex-mesh",
+  "kitty_listen_on": "unix:/tmp/codex-mesh-lab",
+  "config_path": "/home/galeavenworth/.config/codex-mesh/contexts.json"
+}

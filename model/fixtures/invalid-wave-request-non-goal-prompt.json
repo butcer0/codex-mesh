@@ -1,0 +1,12 @@
+{
+  "record_type": "wave_request",
+  "epic": "mesh-9ln",
+  "role": "implementation",
+  "address_prefix": "codex-wave",
+  "concurrency_cap": 2,
+  "workdir": "/workspace/codex-mesh",
+  "prompt_mode": "goal-first",
+  "message_template": "complete {{task}} using the attached Beads context",
+  "frontier_command": "bd ready --parent <epic> --exclude-type epic --json",
+  "dry_run": true
+}

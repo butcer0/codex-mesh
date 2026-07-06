@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "per_session": true,
+  "transport": "pty",
+  "format": "ansi",
+  "capture": "output-bytes",
+  "records_stdin": false,
+  "semantic_filtering": false,
+  "disable_env": "CODEX_MESH_TRANSCRIPT_DISABLE",
+  "session_id": "7",
+  "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi"
+}

@@ -1,0 +1,39 @@
+{
+  "record_type": "wave_status",
+  "epic": "mesh-9ln",
+  "request": {
+    "record_type": "wave_request",
+    "epic": "mesh-9ln",
+    "role": "implementation",
+    "address_prefix": "codex-wave",
+    "concurrency_cap": 1,
+    "workdir": "/workspace/codex-mesh",
+    "prompt_mode": "goal-first",
+    "message_template": "/goal complete {{task}} using the attached Beads context",
+    "frontier_command": "bd ready --parent <epic> --exclude-type epic --json",
+    "dry_run": true
+  },
+  "frontier_command": "bd ready --parent <epic> --exclude-type epic --json",
+  "frontier_source": "fixture",
+  "frontier": [
+    {
+      "id": "mesh-9ln.5",
+      "title": "implement: wave dispatch runtime",
+      "status": "open",
+      "parent": "mesh-9ln"
+    }
+  ],
+  "spawned_count": 2,
+  "skipped_count": 0,
+  "frontier_remaining": 0,
+  "records": [
+    {
+      "record_type": "dispatch_record",
+      "task": "mesh-9ln.5",
+      "address": "codex-wave-mesh-9ln-5",
+      "role": "implementation",
+      "status": "planned",
+      "message": "/goal complete mesh-9ln.5 using the attached Beads context"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "record_type": "result_envelope",
+  "task": "mesh-sml",
+  "session_id": "8",
+  "address": "codex-reviewer-1",
+  "role": "reviewer",
+  "status": "completed",
+  "completed_at_unix": 1783278000,
+  "evidence": [
+    {
+      "kind": "file",
+      "label": "reviewed contract",
+      "path": "/workspace/codex-mesh/model/contract.cue"
+    }
+  ],
+  "payload": {
+    "kind": "review_findings",
+    "summary": "No blocking findings.",
+    "findings": []
+  }
+}
