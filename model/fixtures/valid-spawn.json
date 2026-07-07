@@ -5,13 +5,13 @@
   "role": "implementation",
   "parent": "codex-parent-1",
   "task": "mesh-1sc",
-  "workdir": "/workspace/codex-mesh",
-  "mesh_root": "/workspace",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
+  "mesh_root": "/home/galeavenworth/lab",
   "kitty_context": {
     "record_type": "kitty_context_resolution",
     "source": "mesh-root-config",
-    "mesh_root": "/workspace",
-    "cwd": "/workspace/codex-mesh",
+    "mesh_root": "/home/galeavenworth/lab",
+    "cwd": "/home/galeavenworth/lab/codex-mesh",
     "kitty_listen_on": "unix:/tmp/codex-mesh-lab",
     "config_path": "/home/galeavenworth/.config/codex-mesh/contexts.json"
   },

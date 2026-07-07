@@ -1,0 +1,8 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-parent",
+  "composition_source": "bd-formula",
+  "kitty_session": "operator-session",
+  "kitty_layout": "composition-layout",
+  "kitty_watcher": "watch-window"
+}

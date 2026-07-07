@@ -5,7 +5,7 @@
   "role": "implementation",
   "parent": "codex-parent-1",
   "task": "local task name",
-  "workdir": "/workspace/codex-mesh",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
   "message": "Continue the contract work.",
   "keep_parent": true
 }

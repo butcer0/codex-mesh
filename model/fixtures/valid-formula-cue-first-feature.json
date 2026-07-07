@@ -54,6 +54,19 @@
         "check": "./scripts/verify.sh"
       },
       "result_payload": "implementation"
+    },
+    {
+      "id": "rollout",
+      "title": "prove: rollout",
+      "description": "Prove the minted capability is adopted in a real workflow or record a tracked deferral.",
+      "type": "task",
+      "priority": 1,
+      "depends_on": ["mint-cue"],
+      "goal": {
+        "description": "Closeout links rollout adoption evidence or an explicit deferral bead.",
+        "check": "bd show {{epic}}"
+      },
+      "result_payload": "implementation"
     }
   ]
 }

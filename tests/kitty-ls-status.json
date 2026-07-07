@@ -8,7 +8,7 @@
           {
             "id": 7,
             "title": "codex-implementation-1",
-            "cwd": "/workspace/codex-mesh",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
             "pid": 12345,
             "cmdline": ["codex", "--yolo"],
             "user_vars": {
@@ -21,7 +21,7 @@
           {
             "id": 8,
             "title": "codex-reviewer-1",
-            "cwd": "/workspace/codex-mesh",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
             "pid": 12346,
             "cmdline": ["codex", "--yolo"],
             "user_vars": {

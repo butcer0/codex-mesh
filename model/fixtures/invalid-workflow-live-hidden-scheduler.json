@@ -1,0 +1,56 @@
+{
+  "record_type": "workflow_live_dispatch_result",
+  "run_id": "workflow-live-dispatch",
+  "policy": {
+    "record_type": "workflow_live_dispatch_policy",
+    "authorization": {
+      "record_type": "workflow_live_authorization",
+      "source": "operator_gate",
+      "gate_id": "mesh-ajx",
+      "gate_status": "closed",
+      "scope": "lab-coordinator-delegated",
+      "project_gates_respected": true,
+      "worktree_isolation_required": true,
+      "public_deployment_hold": true,
+      "max_running_agents": 10,
+      "kill_switches": ["lights_off", "broadcast_halt"]
+    },
+    "dry_run_default": true,
+    "live_requires_explicit_request": true,
+    "concurrency_cap": 1,
+    "frontier_command": "bd ready --parent <epic> --exclude-type epic --json",
+    "spawn_adapter_reuse": true,
+    "spawn_adapter": "scripts/codex-mesh-wave spawn_task",
+    "spawn_command": "scripts/spawn",
+    "join_key": "codex_task",
+    "durable_state": "beads-comments-and-transcripts"
+  },
+  "run": {
+    "record_type": "workflow_run",
+    "command": "mesh workflow",
+    "mode": "run",
+    "run_id": "workflow-live-dispatch",
+    "dry_run": false,
+    "live_mutation": true,
+    "request": {
+      "record_type": "workflow_request",
+      "formula": "judge-panel",
+      "parent_task": "mesh-dj8",
+      "repo_id": "codex-mesh",
+      "workdir": "/home/galeavenworth/lab/codex-mesh",
+      "role": "implementation",
+      "address_prefix": "wf-live",
+      "max_steps": 1,
+      "dry_run": false,
+      "live_mutation": true,
+      "default_execution_mode": "mutating",
+      "default_isolation_mode": "worktree",
+      "worktree_base": "/home/galeavenworth/lab/.worktrees"
+    }
+  },
+  "attempts": [],
+  "spawned_count": 0,
+  "skipped_count": 0,
+  "frontier_remaining": 0,
+  "scheduler": "hidden"
+}

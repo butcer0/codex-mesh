@@ -10,7 +10,7 @@
     "close_requires_green": true,
     "check": {
       "kind": "command",
-      "cwd": "/workspace/codex-mesh",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
       "command": ["false"],
       "expected_exit_code": 0,
       "side_effect_free": true
@@ -39,7 +39,7 @@
       "close_requires_green": true,
       "check": {
         "kind": "command",
-        "cwd": "/workspace/codex-mesh",
+        "cwd": "/home/galeavenworth/lab/codex-mesh",
         "command": ["false"],
         "expected_exit_code": 0,
         "side_effect_free": true

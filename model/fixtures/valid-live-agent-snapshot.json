@@ -6,7 +6,7 @@
   "role": "implementation",
   "parent": "codex-parent-1",
   "task": "mesh-1sc",
-  "cwd": "/workspace/codex-mesh",
+  "cwd": "/home/galeavenworth/lab/codex-mesh",
   "pid": 12345,
   "cmdline": ["codex", "--yolo"],
   "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",

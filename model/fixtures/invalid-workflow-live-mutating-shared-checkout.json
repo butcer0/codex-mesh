@@ -1,0 +1,26 @@
+{
+  "record_type": "workflow_request",
+  "formula": "judge-panel",
+  "parent_task": "mesh-dj8",
+  "repo_id": "codex-mesh",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
+  "role": "implementation",
+  "address_prefix": "wf-live",
+  "max_steps": 1,
+  "dry_run": false,
+  "live_mutation": true,
+  "default_execution_mode": "mutating",
+  "default_isolation_mode": "shared_checkout",
+  "live_authorization": {
+    "record_type": "workflow_live_authorization",
+    "source": "operator_gate",
+    "gate_id": "mesh-ajx",
+    "gate_status": "closed",
+    "scope": "lab-coordinator-delegated",
+    "project_gates_respected": true,
+    "worktree_isolation_required": true,
+    "public_deployment_hold": true,
+    "max_running_agents": 10,
+    "kill_switches": ["lights_off", "broadcast_halt"]
+  }
+}

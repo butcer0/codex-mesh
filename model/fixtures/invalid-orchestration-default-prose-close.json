@@ -11,6 +11,20 @@
   "decomposition": "beads-formula",
   "dispatch": "mesh wave dispatch",
   "close_policy": "prose-summary",
+  "closeout": {
+    "predicate_status": "green",
+    "result_envelope_required": true,
+    "rollout": {
+      "mode": "adoption",
+      "evidence": [
+        {
+          "kind": "beads",
+          "label": "rollout adopted",
+          "ref": "cue-first-feature rollout step closed with adoption evidence"
+        }
+      ]
+    }
+  },
   "bounded": true,
   "feature_formula": "cue-first-feature",
   "review_formula": "review-wave",

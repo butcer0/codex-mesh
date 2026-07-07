@@ -1,0 +1,49 @@
+{
+  "record_type": "reclaim_decision",
+  "task": "mesh-mol-s85",
+  "diagnosis": {
+    "record_type": "reclaim_diagnosis",
+    "task": "mesh-mol-s85",
+    "task_status": "in_progress",
+    "assignee": "galeavenworth-personal",
+    "agent_identity_source": "stable_or_derivable_agent_name",
+    "expected_agent_address": "pm-reclaim-s85",
+    "live_agent_match": true,
+    "transcript": {
+      "exists": true,
+      "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi",
+      "bytes": 4096
+    },
+    "classification": "live_agent_present",
+    "evidence": [
+      {
+        "kind": "command",
+        "label": "mesh-agents",
+        "command": "mesh agents --json",
+        "exit_code": 0
+      }
+    ]
+  },
+  "action": "requeue_transcript_backed_work",
+  "dry_run": true,
+  "planned_commands": [
+    {
+      "command": "bd update <task> --status open"
+    },
+    {
+      "command": "bd assign <task> \"\""
+    },
+    {
+      "command": "bd comments add <task> <message-or-file>"
+    }
+  ],
+  "result_comment_required": true,
+  "evidence": [
+    {
+      "kind": "predicate",
+      "label": "bad-release",
+      "command": "mesh goal check",
+      "exit_code": 1
+    }
+  ]
+}

@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+import shlex
+import subprocess
+import sys
+
+
+BEADS_ISSUE_RE = re.compile(r"^[a-z][a-z0-9]*-[a-z0-9]+(-[a-z0-9]+)*(\.[0-9]+)*$")
+ROLES = ("implementation", "reviewer", "judge", "probe")
+
+
+def die(message):
+    print(f"codex-mesh-cookbook: {message}", file=sys.stderr)
+    sys.exit(2)
+
+
+def script_dir():
+    return os.path.dirname(os.path.realpath(__file__))
+
+
+def contract_path():
+    return os.path.realpath(os.path.join(script_dir(), "..", "model", "contract.cue"))
+
+
+def abs_path(path):
+    return os.path.realpath(path)
+
+
+def load_json(path):
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    except OSError as exc:
+        die(f"could not read {path}: {exc}")
+    except json.JSONDecodeError as exc:
+        die(f"{path} is not valid JSON: {exc}")
+
+
+def cue_vet(path, target):
+    completed = subprocess.run(
+        ["cue", "vet", path, contract_path(), "-d", target],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip()
+        die(f"{path} does not vet as {target}: {detail}")
+
+
+def require_issue_id(value, field):
+    if not isinstance(value, str) or not BEADS_ISSUE_RE.match(value):
+        die(f"{field} must be a Beads issue id")
+    return value
+
+
+def find_role_bundle(cookbook, role):
+    bundles = cookbook.get("role_bundles")
+    if not isinstance(bundles, list):
+        die("cookbook role_bundles must be a list")
+    for bundle in bundles:
+        if isinstance(bundle, dict) and bundle.get("role") == role:
+            return bundle
+    die(f"cookbook does not contain role bundle: {role}")
+
+
+def command_line(predicate):
+    check = predicate.get("check") or {}
+    command = check.get("command")
+    if isinstance(command, list) and all(isinstance(part, str) for part in command):
+        return shlex.join(command)
+    return "<missing command>"
+
+
+def source_line(source):
+    surface = source.get("surface", "unknown")
+    ref = source.get("ref", "<missing-ref>")
+    redaction = source.get("redaction", "none")
+    return f"- {surface}: {ref} (redaction: {redaction})"
+
+
+def output_contract_line(bundle):
+    role = bundle.get("role")
+    payload = bundle.get("expected_result_payload")
+    return (
+        f"Return a RESULT_ENVELOPE Beads comment for role={role}, "
+        f"expected_payload={payload}, status completed|blocked|failed, with command/file/predicate evidence."
+    )
+
+
+def render_message(cookbook, bundle, predicate, predicate_source, task, title):
+    render_policy = cookbook.get("render_policy") or {}
+    include_sections = render_policy.get("include_sections") or [
+        "role",
+        "goal",
+        "constraints",
+        "context",
+        "success_criteria",
+        "output_contract",
+        "stop_rules",
+    ]
+    context = bundle.get("context") or cookbook.get("context_bundle") or {}
+    sources = context.get("sources") or []
+    hydration_order = context.get("hydration_order") or []
+    stop_rules = bundle.get("stop_rules") or {}
+    block_conditions = stop_rules.get("block_conditions") or []
+    lines = []
+
+    def add_section(name, body):
+        if name in include_sections:
+            lines.append(name.replace("_", " ").title())
+            lines.extend(body)
+            lines.append("")
+
+    add_section("role", [
+        f"{bundle.get('role')} worker.",
+        str(bundle.get("duty", "")).strip(),
+    ])
+    add_section("goal", [
+        f"Work {task}: {title}",
+        str(bundle.get("goal", "")).strip(),
+        f"Outcome: {cookbook.get('outcome_goal')}",
+    ])
+    add_section("constraints", [
+        "- Use this CUE-validated context cookbook as the prompt source.",
+        "- Deliver the rendered prompt through the requested transport unchanged.",
+        "- Hydrate only the declared context sources; do not add a hidden context database or scheduler.",
+        "- Red-check the frozen predicate before work and persist until the task is handled end to end.",
+    ])
+    add_section("context", [
+        "Hydration order: " + ", ".join(hydration_order),
+        "Sources:",
+        *(source_line(source) for source in sources),
+    ])
+    add_section("success_criteria", [
+        f"Predicate source: {predicate_source}",
+        str(predicate.get("description", "")).strip(),
+        f"Predicate task: {predicate.get('task')}",
+        f"Predicate command: {command_line(predicate)}",
+    ])
+    add_section("output_contract", [
+        output_contract_line(bundle),
+    ])
+    add_section("stop_rules", [
+        f"Close policy: {stop_rules.get('close_policy')}",
+        f"Red-check required: {stop_rules.get('red_check_required')}",
+        f"Close requires green: {stop_rules.get('close_requires_green')}",
+        f"Result envelope required: {stop_rules.get('result_envelope_required')}",
+        "Block conditions:",
+        *(f"- {condition}" for condition in block_conditions),
+    ])
+    lines.append(
+        "Cookbook provenance: "
+        f"renderer=context-cookbook-renderer cookbook_id={cookbook.get('cookbook_id')} "
+        f"parent_task={cookbook.get('parent_task')} role={bundle.get('role')} task={task}"
+    )
+    message = "/goal " + "\n".join(line for line in lines if line is not None).strip()
+    return message, include_sections
+
+
+def render(args):
+    cookbook_path = abs_path(args.cookbook)
+    cue_vet(cookbook_path, "#ContextCookbook")
+    cookbook = load_json(cookbook_path)
+    role = args.role
+    if role not in ROLES:
+        die(f"--role must be one of: {', '.join(ROLES)}")
+    task = require_issue_id(args.task, "--task")
+    title = args.title or task
+    bundle = find_role_bundle(cookbook, role)
+
+    if args.predicate:
+        predicate_path = abs_path(args.predicate)
+        cue_vet(predicate_path, "#GoalPredicate")
+        predicate = load_json(predicate_path)
+        if predicate.get("task") != task:
+            die(f"predicate task {predicate.get('task')} does not match render task {task}")
+        predicate_source = "task-predicate"
+    else:
+        predicate = bundle.get("success_criteria")
+        if not isinstance(predicate, dict):
+            die("role bundle has no success_criteria predicate")
+        predicate_source = "role-bundle"
+
+    message, include_sections = render_message(cookbook, bundle, predicate, predicate_source, task, title)
+    payload = {
+        "record_type": "cookbook_rendered_prompt",
+        "renderer": "context-cookbook-renderer",
+        "cookbook_id": cookbook["cookbook_id"],
+        "parent_task": cookbook["parent_task"],
+        "role": role,
+        "task": task,
+        "title": title,
+        "prompt_mode": "goal-first",
+        "message": message,
+        "include_sections": include_sections,
+        "success_criteria": predicate,
+        "success_criteria_source": predicate_source,
+        "source_reads_only_before_dispatch": True,
+        "preserve_transport_semantics": True,
+    }
+    if args.json:
+        json.dump(payload, sys.stdout, indent=2, sort_keys=True)
+        print()
+    else:
+        print(message)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Render CUE-validated context cookbook prompts")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    render_parser = subparsers.add_parser("render", description="render a prompt from #ContextCookbook")
+    render_parser.add_argument("--cookbook", required=True, help="#ContextCookbook JSON path")
+    render_parser.add_argument("--role", required=True, choices=ROLES, help="role bundle to render")
+    render_parser.add_argument("--task", required=True, help="target Beads task id")
+    render_parser.add_argument("--title", help="target Beads task title")
+    render_parser.add_argument("--predicate", help="target #GoalPredicate JSON path")
+    render_parser.add_argument("--json", action="store_true", help="emit #CookbookRenderedPrompt JSON")
+    render_parser.set_defaults(func=render)
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

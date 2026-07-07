@@ -10,7 +10,21 @@
   ],
   "decomposition": "beads-formula",
   "dispatch": "mesh wave dispatch",
-  "close_policy": "green-predicate-and-result-envelope",
+  "close_policy": "green-predicate-result-envelope-and-rollout-adoption",
+  "closeout": {
+    "predicate_status": "green",
+    "result_envelope_required": true,
+    "rollout": {
+      "mode": "adoption",
+      "evidence": [
+        {
+          "kind": "beads",
+          "label": "rollout adopted",
+          "ref": "cue-first-feature rollout step closed with adoption evidence"
+        }
+      ]
+    }
+  },
   "bounded": true,
   "daemon": true,
   "feature_formula": "cue-first-feature",

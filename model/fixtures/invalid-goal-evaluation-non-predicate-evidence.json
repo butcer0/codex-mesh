@@ -14,7 +14,7 @@
     "close_requires_green": true,
     "check": {
       "kind": "command",
-      "cwd": "/workspace/codex-mesh",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
       "command": ["test", "-f", "/tmp/codex-mesh-goal-state"],
       "expected_exit_code": 0,
       "side_effect_free": true,
@@ -31,6 +31,6 @@
   "evidence": {
     "kind": "file",
     "label": "wrong evidence kind",
-    "path": "/workspace/codex-mesh/model/contract.cue"
+    "path": "/home/galeavenworth/lab/codex-mesh/model/contract.cue"
   }
 }

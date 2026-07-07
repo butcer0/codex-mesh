@@ -1,0 +1,18 @@
+{
+  "mode": "goal-first",
+  "deterministic": true,
+  "side_effect_free": true,
+  "message_template": "Work {{task}} without goal mode",
+  "include_sections": [
+    "role",
+    "goal",
+    "constraints",
+    "context",
+    "success_criteria",
+    "output_contract",
+    "stop_rules"
+  ],
+  "preserve_transport_semantics": true,
+  "source_snapshots_required": true,
+  "require_upfront_plan": false
+}

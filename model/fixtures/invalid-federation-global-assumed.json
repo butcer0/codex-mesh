@@ -1,0 +1,13 @@
+{
+  "record_type": "federation_workspace_ref",
+  "workspace_id": "lab",
+  "workspace_root": "/home/galeavenworth/lab",
+  "workspace_role": "mesh-root",
+  "workflow_class": "coordinator",
+  "beads_prefix": "lab",
+  "beads_context_command": "bd -C WORKSPACE context --json",
+  "mesh_root": "/home/galeavenworth/lab",
+  "belongs_to_lab_federation": true,
+  "lab_root_context_proven": true,
+  "global_database_assumed": true
+}

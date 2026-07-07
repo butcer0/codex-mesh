@@ -1,6 +1,6 @@
 {
   "name": "lab",
-  "root": "/workspace",
+  "root": "/home/galeavenworth/lab",
   "workspace_role": "mesh-root",
   "beads_status": "missing",
   "task_count": 0

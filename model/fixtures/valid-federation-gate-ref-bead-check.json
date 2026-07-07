@@ -1,0 +1,8 @@
+{
+  "record_type": "federation_gate_ref",
+  "gate_kind": "bead-check",
+  "check_command": "bd gate check --type=bead --dry-run",
+  "await_id": "lab:lab-0c4",
+  "create_command_modeled": false,
+  "reason": "Cross-rig bead gates are modeled as a check surface until create semantics are proven."
+}

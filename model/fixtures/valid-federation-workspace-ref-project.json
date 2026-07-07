@@ -1,0 +1,13 @@
+{
+  "record_type": "federation_workspace_ref",
+  "workspace_id": "codex-mesh",
+  "workspace_root": "/home/galeavenworth/lab/codex-mesh",
+  "workspace_role": "project",
+  "workflow_class": "implementation",
+  "beads_prefix": "mesh",
+  "beads_context_command": "bd -C WORKSPACE context --json",
+  "mesh_root": "/home/galeavenworth/lab",
+  "belongs_to_lab_federation": true,
+  "project_context_proven": true,
+  "workspace_identity_source": "beads-context"
+}

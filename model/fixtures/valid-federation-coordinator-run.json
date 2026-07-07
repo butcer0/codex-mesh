@@ -1,0 +1,208 @@
+{
+  "record_type": "federation_coordinator_run",
+  "role": {
+    "record_type": "federation_role",
+    "name": "coordinator",
+    "scope": "mesh-root",
+    "delegates_to_project_manager": true,
+    "direct_child_workspace_access": false,
+    "owns_cross_workspace_rollout": true,
+    "cross_workspace_lifecycle_owner": true
+  },
+  "mesh_root_workspace": {
+    "record_type": "federation_workspace_ref",
+    "workspace_id": "lab",
+    "workspace_root": "/home/galeavenworth/lab",
+    "workspace_role": "mesh-root",
+    "workflow_class": "coordinator",
+    "beads_prefix": "lab",
+    "beads_context_command": "bd -C WORKSPACE context --json",
+    "mesh_root": "/home/galeavenworth/lab",
+    "belongs_to_lab_federation": true,
+    "lab_root_context_proven": true
+  },
+  "source_task": "lab-8gq",
+  "delegations": [
+    {
+      "record_type": "federation_delegation",
+      "source_mesh_task": "lab-8gq",
+      "target_workspace": {
+        "record_type": "federation_workspace_ref",
+        "workspace_id": "codex-mesh",
+        "workspace_root": "/home/galeavenworth/lab/codex-mesh",
+        "workspace_role": "project",
+        "workflow_class": "implementation",
+        "beads_prefix": "mesh",
+        "beads_context_command": "bd -C WORKSPACE context --json",
+        "mesh_root": "/home/galeavenworth/lab",
+        "belongs_to_lab_federation": true,
+        "project_context_proven": true
+      },
+      "target_project_task": "mesh-mol-g27",
+      "coordinator": {
+        "record_type": "federation_role",
+        "name": "coordinator",
+        "scope": "mesh-root",
+        "delegates_to_project_manager": true,
+        "direct_child_workspace_access": false,
+        "owns_cross_workspace_rollout": true,
+        "cross_workspace_lifecycle_owner": true
+      },
+      "project_manager": {
+        "record_type": "federation_role",
+        "name": "project-manager",
+        "scope": "project-workspace",
+        "owns_one_project_workspace": true,
+        "owns_project_frontier": true,
+        "owns_worker_result_harvest": true,
+        "direct_child_workspace_access": false
+      },
+      "transport": "spawn",
+      "cookbook_bundle": {
+        "record_type": "federation_cookbook_bundle",
+        "role": "project-manager",
+        "context_cookbook_id": "federation-project-manager",
+        "context_cookbook_path": "/home/galeavenworth/lab/codex-mesh/skills/codex-mesh/SKILL.md",
+        "handoff_surface": "skill",
+        "instruction_hydration": "fresh-agent-cwd-and-cookbook"
+      },
+      "goal_predicate_path": "/tmp/codex-mesh-campaign/predicates/mesh-mol-g27.json",
+      "expected_result": "federation_result_envelope",
+      "beads_comment_anchor": "bd comments add lab-8gq --file pm-result-envelope.txt",
+      "transcript_required": true,
+      "coordinator_direct_child_workspace_access": false
+    }
+  ],
+  "result": {
+    "record_type": "federation_result_envelope",
+    "task": "lab-8gq",
+    "status": "completed",
+    "role": "coordinator",
+    "base_envelope": {
+      "record_type": "result_envelope",
+      "task": "lab-8gq",
+      "session_id": "2",
+      "address": "lab-coordinator",
+      "role": "implementation",
+      "status": "completed",
+      "completed_at_unix": 1783386000,
+      "evidence": [
+        {
+          "kind": "command",
+          "label": "mesh status",
+          "command": "mesh status --json",
+          "exit_code": 0
+        }
+      ],
+      "payload": {
+        "kind": "implementation",
+        "summary": "Coordinator harvested PM result envelopes.",
+        "changed_files": [],
+        "verification": [
+          {
+            "kind": "command",
+            "label": "mesh status",
+            "command": "mesh status --json",
+            "exit_code": 0
+          }
+        ]
+      }
+    },
+    "beads_comment_anchor": "bd -C /home/galeavenworth/lab comments add lab-8gq --file coordinator-result.txt",
+    "transcript_paths": [
+      "/home/galeavenworth/.local/state/codex-mesh/transcripts/2.ansi"
+    ],
+    "pm_results": [
+      {
+        "record_type": "federation_result_envelope",
+        "task": "mesh-mol-g27",
+        "status": "completed",
+        "role": "project-manager",
+        "base_envelope": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-g27",
+          "session_id": "28",
+          "address": "codex-mesh-pm",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783386000,
+          "evidence": [
+            {
+              "kind": "command",
+              "label": "verify",
+              "command": "./scripts/verify.sh",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "PM completed project work.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "command",
+                "label": "verify",
+                "command": "./scripts/verify.sh",
+                "exit_code": 0
+              }
+            ]
+          }
+        },
+        "beads_comment_anchor": "bd comments add mesh-mol-g27 --file result-envelope.txt",
+        "transcript_paths": [
+          "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi"
+        ],
+        "workspace": {
+          "record_type": "federation_workspace_ref",
+          "workspace_id": "codex-mesh",
+          "workspace_root": "/home/galeavenworth/lab/codex-mesh",
+          "workspace_role": "project",
+          "workflow_class": "implementation",
+          "beads_prefix": "mesh",
+          "beads_context_command": "bd -C WORKSPACE context --json",
+          "mesh_root": "/home/galeavenworth/lab",
+          "belongs_to_lab_federation": true,
+          "project_context_proven": true
+        },
+        "delegated_results": [
+          {
+            "record_type": "result_envelope",
+            "task": "mesh-mol-g27",
+            "session_id": "29",
+            "address": "fed-worker",
+            "role": "implementation",
+            "status": "completed",
+            "completed_at_unix": 1783386000,
+            "evidence": [
+              {
+                "kind": "command",
+                "label": "verify",
+                "command": "./scripts/verify.sh",
+                "exit_code": 0
+              }
+            ],
+            "payload": {
+              "kind": "implementation",
+              "summary": "Worker completed project work.",
+              "changed_files": [],
+              "verification": [
+                {
+                  "kind": "command",
+                  "label": "verify",
+                  "command": "./scripts/verify.sh",
+                  "exit_code": 0
+                }
+              ]
+            }
+          }
+        ],
+        "project_verifier": "./scripts/verify.sh",
+        "frontier_status": "bd ready --json",
+        "merge_slot_status": "bd merge-slot check green"
+      }
+    ],
+    "lab_root_evidence": "bd -C /home/galeavenworth/lab context --json",
+    "cross_workspace_rollout": true
+  },
+  "no_direct_child_workspace_access": true
+}

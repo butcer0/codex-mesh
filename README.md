@@ -55,6 +55,10 @@ operator's environment.
   to one kitty remote-control socket for fresh shells and non-kitty terminals.
 - `mesh context show|resolve [--mesh-root DIR] [--json]` shows the kitty target
   the command surface will use.
+- `mesh session render --profile operator [--mesh-root DIR]` emits an operator
+  `.kitty-session` file from the same read-time watch snapshot used by
+  `mesh watch`; it opens operator views and workspace shells, and does not
+  relaunch addressed agents or store `codex_*` user variables.
 - `mesh goal check [--phase red-check|iteration|close] PREDICATE.json`
   evaluates a frozen goal predicate and emits `#GoalEvaluation` JSON.
 - `mesh wave dispatch REQUEST.json` spawns a bounded pass over a Beads ready

@@ -4,6 +4,6 @@
   "once": true,
   "interval_seconds": 2,
   "idle_threshold_seconds": 30,
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "workspace_scan_depth": 2
 }

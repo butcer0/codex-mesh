@@ -1,0 +1,35 @@
+{
+  "record_type": "workspace_validation",
+  "status": "valid",
+  "workspace_scan_depth": 1,
+  "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
+  "workspaces": [
+    {
+      "record_type": "workspace",
+      "name": "archive",
+      "root": "/home/galeavenworth/lab/archive",
+      "workspace_role": "project",
+      "kind": "archive",
+      "workflow_class": "reference",
+      "child": true,
+      "default_formulas": [
+        "review-wave"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "archive",
+        "kind": "archive",
+        "workflow_class": "reference",
+        "child": true
+      },
+      "discovered": {
+        "name": "archive",
+        "root": "/home/galeavenworth/lab/archive",
+        "workspace_role": "project",
+        "beads_status": "missing",
+        "task_count": 0
+      }
+    }
+  ],
+  "errors": []
+}

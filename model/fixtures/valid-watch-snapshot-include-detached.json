@@ -5,20 +5,20 @@
   "generated_at_unix": 1783275600,
   "idle_threshold_seconds": 30,
   "include_detached": true,
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "workspace_scan_depth": 1,
   "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
   "workspaces": [
     {
       "name": "lab",
-      "root": "/workspace",
+      "root": "/home/galeavenworth/lab",
       "workspace_role": "mesh-root",
       "beads_status": "available",
       "task_count": 0
     },
     {
       "name": "codex-mesh",
-      "root": "/workspace/codex-mesh",
+      "root": "/home/galeavenworth/lab/codex-mesh",
       "workspace_role": "project",
       "beads_status": "available",
       "task_count": 1
@@ -39,7 +39,7 @@
       "task_title": "deepen: current live-status rails",
       "task_status": "hooked",
       "workspace": "codex-mesh",
-      "workspace_root": "/workspace/codex-mesh",
+      "workspace_root": "/home/galeavenworth/lab/codex-mesh",
       "beads_status": "available",
       "last_output_known": false,
       "resume_signal": true

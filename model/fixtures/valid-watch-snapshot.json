@@ -5,33 +5,33 @@
   "generated_at_unix": 1783275600,
   "idle_threshold_seconds": 30,
   "include_detached": false,
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "kitty_context": {
     "record_type": "kitty_context_resolution",
     "source": "fixture",
-    "mesh_root": "/workspace",
-    "cwd": "/workspace/codex-mesh"
+    "mesh_root": "/home/galeavenworth/lab",
+    "cwd": "/home/galeavenworth/lab/codex-mesh"
   },
   "workspace_scan_depth": 1,
   "beads_command": "bd list --status=open,in_progress,hooked --json",
   "workspaces": [
     {
       "name": "lab",
-      "root": "/workspace",
+      "root": "/home/galeavenworth/lab",
       "workspace_role": "mesh-root",
       "beads_status": "available",
       "task_count": 0
     },
     {
       "name": "codex-mesh",
-      "root": "/workspace/codex-mesh",
+      "root": "/home/galeavenworth/lab/codex-mesh",
       "workspace_role": "project",
       "beads_status": "available",
       "task_count": 3
     },
     {
       "name": "lab-notes",
-      "root": "/workspace/lab-notes",
+      "root": "/home/galeavenworth/lab/lab-notes",
       "workspace_role": "project",
       "beads_status": "missing",
       "task_count": 0
@@ -56,9 +56,9 @@
       "task_title": "implement: mesh watch command",
       "task_status": "in_progress",
       "workspace": "codex-mesh",
-      "workspace_root": "/workspace/codex-mesh",
+      "workspace_root": "/home/galeavenworth/lab/codex-mesh",
       "beads_status": "available",
-      "cwd": "/workspace/codex-mesh",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
       "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",
       "transcript_exists": true,
       "transcript_bytes": 4096,
@@ -77,9 +77,9 @@
       "task_title": "mint-cue: watch contract and fixtures",
       "task_status": "open",
       "workspace": "codex-mesh",
-      "workspace_root": "/workspace/codex-mesh",
+      "workspace_root": "/home/galeavenworth/lab/codex-mesh",
       "beads_status": "available",
-      "cwd": "/workspace/codex-mesh",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
       "transcript_exists": false,
       "last_output_known": false
     },
@@ -90,9 +90,9 @@
       "window_id": 9,
       "address": "codex-adhoc-1",
       "role": "adhoc",
-      "cwd": "/workspace/lab-notes",
+      "cwd": "/home/galeavenworth/lab/lab-notes",
       "workspace": "lab-notes",
-      "workspace_root": "/workspace/lab-notes",
+      "workspace_root": "/home/galeavenworth/lab/lab-notes",
       "beads_status": "missing",
       "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/9.ansi",
       "transcript_exists": true,

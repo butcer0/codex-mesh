@@ -1,0 +1,54 @@
+{
+  "record_type": "reclaim_decision",
+  "task": "mesh-mol-s85",
+  "diagnosis": {
+    "record_type": "reclaim_diagnosis",
+    "task": "mesh-mol-s85",
+    "task_status": "in_progress",
+    "assignee": "galeavenworth-personal",
+    "agent_identity_source": "stable_or_derivable_agent_name",
+    "expected_agent_address": "pm-reclaim-s85",
+    "live_agent_match": false,
+    "transcript": {
+      "exists": true,
+      "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi",
+      "bytes": 4096
+    },
+    "classification": "claimed_without_live_agent_transcript_backed",
+    "evidence": [
+      {
+        "kind": "transcript",
+        "label": "transcript-history",
+        "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi"
+      }
+    ]
+  },
+  "action": "requeue_transcript_backed_work",
+  "dry_run": true,
+  "planned_commands": [
+    {
+      "command": "bd update <task> --status open",
+      "dry_run": true,
+      "executed": false
+    },
+    {
+      "command": "bd assign <task> \"\"",
+      "dry_run": true,
+      "executed": false
+    },
+    {
+      "command": "bd comments add <task> <message-or-file>",
+      "dry_run": true,
+      "executed": false
+    }
+  ],
+  "result_comment_required": true,
+  "evidence": [
+    {
+      "kind": "predicate",
+      "label": "requeue-predicate",
+      "command": "mesh goal check --phase close reclaim.json",
+      "exit_code": 0
+    }
+  ]
+}

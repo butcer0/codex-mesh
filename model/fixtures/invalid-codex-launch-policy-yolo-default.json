@@ -1,0 +1,34 @@
+{
+  "mode": "interactive_kitty",
+  "sandbox": {
+    "sandbox_mode": "workspace-write",
+    "approval_policy": "on-request",
+    "full_access_bypass": false
+  },
+  "model_policy": {
+    "recommended_model": "gpt-5.5",
+    "selected_model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "official_doc": {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/cli/features",
+      "section": "model-guidance",
+      "manual_line_range": "5578-5588",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    }
+  },
+  "profile": "default",
+  "web_search": "cached",
+  "mcp_health": "redacted-health-only",
+  "output_schema_required": false,
+  "channel": "spawn",
+  "kitty_context": {
+    "record_type": "kitty_context_resolution",
+    "source": "mesh-root-config",
+    "mesh_root": "/home/galeavenworth/lab",
+    "cwd": "/home/galeavenworth/lab/codex-mesh",
+    "kitty_listen_on": "unix:@mesh-lab",
+    "config_path": "/home/galeavenworth/.config/codex-mesh/contexts.json"
+  },
+  "yolo_default": true
+}

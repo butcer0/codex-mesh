@@ -3,7 +3,7 @@
   "formula_name": "loop-until-dry",
   "parent_task": "mesh-dj8",
   "repo_id": "codex-mesh",
-  "workdir": "/workspace/codex-mesh",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
   "formula": {
     "formula": "loop-until-dry",
     "description": "Serialize merge and closeout work through the main checkout.",
@@ -35,7 +35,7 @@
         "repo_id": "codex-mesh",
         "task_id": "mesh-dj8.5",
         "role": "merge",
-        "cwd": "/workspace/codex-mesh",
+        "cwd": "/home/galeavenworth/lab/codex-mesh",
         "placement_key": "codex-mesh/mesh-dj8.5/merge/attempt-1",
         "execution_mode": "merge",
         "isolation_mode": "main_owned",

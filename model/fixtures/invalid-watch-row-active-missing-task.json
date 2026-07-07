@@ -5,7 +5,7 @@
   "window_id": 7,
   "address": "codex-implementation-1",
   "role": "implementation",
-  "cwd": "/workspace/codex-mesh",
+  "cwd": "/home/galeavenworth/lab/codex-mesh",
   "transcript_exists": true,
   "last_output_known": true,
   "idle_seconds": 4

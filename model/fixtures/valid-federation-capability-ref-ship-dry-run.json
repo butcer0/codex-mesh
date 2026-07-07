@@ -1,0 +1,11 @@
+{
+  "record_type": "federation_capability_ref",
+  "capability": "mesh-federation",
+  "provider": "beads-ship",
+  "dry_run_command": "bd ship CAPABILITY --dry-run",
+  "export_label": "export:mesh-federation",
+  "provides_label": "provides:mesh-federation",
+  "external_dependency": "external:private-origin:mesh-federation",
+  "public_deployment_hold": true,
+  "shipped": false
+}

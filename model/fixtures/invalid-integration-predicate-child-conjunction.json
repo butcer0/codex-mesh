@@ -1,0 +1,37 @@
+{
+  "record_type": "goal_predicate",
+  "task": "mesh-mol-parent",
+  "description": "Invalid because the parent predicate is declared as an implicit child conjunction.",
+  "frozen": true,
+  "red_check_required": true,
+  "close_requires_green": true,
+  "check": {
+    "kind": "command",
+    "cwd": "/home/galeavenworth/lab/codex-mesh",
+    "command": ["true"],
+    "expected_exit_code": 0,
+    "side_effect_free": true
+  },
+  "adversarial": [
+    {
+      "label": "implicit conjunction",
+      "reason": "A parent close cannot be inferred by AND-ing child predicates.",
+      "expected_status": "red"
+    }
+  ],
+  "integration_scope": "formula",
+  "composition_source": "bd-formula",
+  "proof_obligations": ["parent-predicate-distinct", "formula-step-ordering"],
+  "evidence_commands": [
+    {
+      "purpose": "parent-integration-evaluation",
+      "primitive": "mesh goal check --phase close <predicate>",
+      "command": "mesh goal check --phase close /tmp/parent.json",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    }
+  ],
+  "derived_from_child_conjunction": true
+}

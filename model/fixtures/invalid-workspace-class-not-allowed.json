@@ -1,0 +1,44 @@
+{
+  "record_type": "workspace_validation",
+  "status": "valid",
+  "workspace_scan_depth": 1,
+  "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
+  "workspaces": [
+    {
+      "record_type": "workspace",
+      "name": "lab",
+      "root": "/home/galeavenworth/lab",
+      "workspace_role": "mesh-root",
+      "kind": "mesh",
+      "workflow_class": "implementation",
+      "child": false,
+      "default_formulas": [
+        "cue-first-feature"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "lab",
+        "kind": "mesh",
+        "workflow_class": "implementation",
+        "child": false
+      },
+      "discovered": {
+        "name": "lab",
+        "root": "/home/galeavenworth/lab",
+        "workspace_role": "mesh-root",
+        "beads_status": "available",
+        "task_count": 0
+      },
+      "beads": {
+        "record_type": "workspace_beads_evidence",
+        "status": "available",
+        "source": "bd-config-context",
+        "commands": [
+          "bd context --json"
+        ],
+        "prefix": "lab"
+      }
+    }
+  ],
+  "errors": []
+}

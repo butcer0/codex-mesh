@@ -3,6 +3,6 @@
   "backend": "kitty",
   "address": "codex-implementation-1",
   "role": "implementation",
-  "workdir": "/workspace/codex-mesh",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
   "keep_parent": false
 }

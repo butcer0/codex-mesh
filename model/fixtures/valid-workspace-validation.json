@@ -1,0 +1,152 @@
+{
+  "record_type": "workspace_validation",
+  "status": "valid",
+  "workspace_scan_depth": 1,
+  "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
+  "mesh_root": "/home/galeavenworth/lab",
+  "workspaces": [
+    {
+      "record_type": "workspace",
+      "name": "lab",
+      "root": "/home/galeavenworth/lab",
+      "workspace_role": "mesh-root",
+      "kind": "mesh",
+      "workflow_class": "coordinator",
+      "child": false,
+      "default_formulas": [
+        "cue-first-feature",
+        "review-wave",
+        "judge-panel",
+        "loop-until-dry",
+        "completeness-critic"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "lab",
+        "kind": "mesh",
+        "workflow_class": "coordinator",
+        "child": false,
+        "default_formulas": [
+          "cue-first-feature",
+          "review-wave",
+          "judge-panel",
+          "loop-until-dry",
+          "completeness-critic"
+        ]
+      },
+      "discovered": {
+        "name": "lab",
+        "root": "/home/galeavenworth/lab",
+        "workspace_role": "mesh-root",
+        "beads_status": "available",
+        "task_count": 0
+      },
+      "beads": {
+        "record_type": "workspace_beads_evidence",
+        "status": "available",
+        "source": "bd-config-context",
+        "commands": [
+          "bd context --json",
+          "bd where --json",
+          "bd config show --json",
+          "bd config get issue_prefix"
+        ],
+        "prefix": "lab",
+        "database": "lab",
+        "project_id": "lab-root",
+        "repo_root": "/home/galeavenworth/lab",
+        "beads_dir": "/home/galeavenworth/lab/.beads",
+        "role": "maintainer"
+      }
+    },
+    {
+      "record_type": "workspace",
+      "name": "codex-mesh",
+      "root": "/home/galeavenworth/lab/codex-mesh",
+      "workspace_role": "project",
+      "kind": "software-project",
+      "workflow_class": "implementation",
+      "child": true,
+      "default_formulas": [
+        "cue-first-feature",
+        "review-wave",
+        "judge-panel",
+        "loop-until-dry",
+        "completeness-critic"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "codex-mesh",
+        "kind": "software-project",
+        "workflow_class": "implementation",
+        "child": true,
+        "default_formulas": [
+          "cue-first-feature",
+          "review-wave",
+          "judge-panel",
+          "loop-until-dry",
+          "completeness-critic"
+        ]
+      },
+      "discovered": {
+        "name": "codex-mesh",
+        "root": "/home/galeavenworth/lab/codex-mesh",
+        "workspace_role": "project",
+        "beads_status": "available",
+        "task_count": 4
+      },
+      "beads": {
+        "record_type": "workspace_beads_evidence",
+        "status": "available",
+        "source": "bd-config-context",
+        "commands": [
+          "bd context --json",
+          "bd where --json",
+          "bd config show --json",
+          "bd config get issue_prefix"
+        ],
+        "prefix": "mesh",
+        "database": "mesh",
+        "project_id": "codex-mesh",
+        "repo_root": "/home/galeavenworth/lab/codex-mesh",
+        "beads_dir": "/home/galeavenworth/lab/codex-mesh/.beads",
+        "role": "maintainer",
+        "sync_remote": "git@example.invalid:codex-mesh"
+      }
+    },
+    {
+      "record_type": "workspace",
+      "name": "lab-notes",
+      "root": "/home/galeavenworth/lab/lab-notes",
+      "workspace_role": "project",
+      "kind": "notes",
+      "workflow_class": "reference",
+      "child": true,
+      "default_formulas": [
+        "review-wave",
+        "judge-panel",
+        "completeness-critic"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "lab-notes",
+        "kind": "notes",
+        "workflow_class": "reference",
+        "child": true,
+        "default_formulas": [
+          "review-wave",
+          "judge-panel",
+          "completeness-critic"
+        ]
+      },
+      "discovered": {
+        "name": "lab-notes",
+        "root": "/home/galeavenworth/lab/lab-notes",
+        "workspace_role": "project",
+        "beads_status": "missing",
+        "task_count": 0
+      }
+    }
+  ],
+  "errors": []
+}

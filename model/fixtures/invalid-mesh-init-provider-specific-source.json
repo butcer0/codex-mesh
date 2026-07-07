@@ -1,6 +1,6 @@
 {
   "record_type": "mesh_init",
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "prefix": "lab",
   "dry_run": true,
   "remote_url": "http://example.invalid:50051/example/lab",
@@ -8,7 +8,7 @@
   "commands": [
     {
       "argv": ["bd", "init"],
-      "cwd": "/workspace",
+      "cwd": "/home/galeavenworth/lab",
       "status": "planned"
     }
   ]

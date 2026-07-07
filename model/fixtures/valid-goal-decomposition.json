@@ -9,7 +9,7 @@
     "close_requires_green": true,
     "check": {
       "kind": "command",
-      "cwd": "/workspace/codex-mesh",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
       "command": ["./scripts/verify.sh"],
       "expected_exit_code": 0,
       "side_effect_free": true
@@ -32,7 +32,7 @@
       "close_requires_green": true,
       "check": {
         "kind": "command",
-        "cwd": "/workspace/codex-mesh",
+        "cwd": "/home/galeavenworth/lab/codex-mesh",
         "command": ["cue", "vet", "model/fixtures/valid-goal-predicate.json", "model/contract.cue", "-d", "#GoalPredicate"],
         "expected_exit_code": 0,
         "side_effect_free": true

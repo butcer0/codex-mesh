@@ -7,7 +7,7 @@
     "repo_id": "codex-mesh",
     "task_id": "mesh-dj8.1",
     "role": "implementation",
-    "cwd": "/workspace/.worktrees/wf-impl-mesh-dj8-1",
+    "cwd": "/home/galeavenworth/lab/.worktrees/wf-impl-mesh-dj8-1",
     "placement_key": "codex-mesh/mesh-dj8.1/implementation/attempt-1",
     "execution_mode": "mutating",
     "isolation_mode": "worktree",

@@ -1,0 +1,35 @@
+{
+  "record_type": "workspace_validation",
+  "status": "valid",
+  "workspace_scan_depth": 1,
+  "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
+  "workspaces": [
+    {
+      "record_type": "workspace",
+      "name": "codex-mesh",
+      "root": "/home/galeavenworth/lab/codex-mesh",
+      "workspace_role": "project",
+      "kind": "software-project",
+      "workflow_class": "implementation",
+      "child": true,
+      "default_formulas": [
+        "cue-first-feature"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "codex-mesh",
+        "kind": "software-project",
+        "workflow_class": "implementation",
+        "child": true
+      },
+      "discovered": {
+        "name": "codex-mesh",
+        "root": "/home/galeavenworth/lab/codex-mesh",
+        "workspace_role": "project",
+        "beads_status": "missing",
+        "task_count": 0
+      }
+    }
+  ],
+  "errors": []
+}

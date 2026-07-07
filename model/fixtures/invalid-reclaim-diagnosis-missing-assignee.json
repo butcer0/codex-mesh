@@ -1,0 +1,21 @@
+{
+  "record_type": "reclaim_diagnosis",
+  "task": "mesh-mol-s85",
+  "task_status": "in_progress",
+  "agent_identity_source": "stable_or_derivable_agent_name",
+  "expected_agent_address": "pm-reclaim-s85",
+  "live_agent_match": false,
+  "transcript": {
+    "exists": true,
+    "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi",
+    "bytes": 4096
+  },
+  "classification": "claimed_without_live_agent_transcript_backed",
+  "evidence": [
+    {
+      "kind": "beads",
+      "label": "missing-assignee",
+      "ref": "mesh-mol-s85"
+    }
+  ]
+}

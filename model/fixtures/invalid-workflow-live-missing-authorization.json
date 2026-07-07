@@ -1,0 +1,15 @@
+{
+  "record_type": "workflow_request",
+  "formula": "judge-panel",
+  "parent_task": "mesh-dj8",
+  "repo_id": "codex-mesh",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
+  "role": "implementation",
+  "address_prefix": "wf-live",
+  "max_steps": 1,
+  "dry_run": false,
+  "live_mutation": true,
+  "default_execution_mode": "mutating",
+  "default_isolation_mode": "worktree",
+  "worktree_base": "/home/galeavenworth/lab/.worktrees"
+}

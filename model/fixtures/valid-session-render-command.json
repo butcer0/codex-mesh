@@ -1,0 +1,8 @@
+{
+  "command": "mesh session render",
+  "profile": "operator",
+  "output_mode": "session",
+  "source": "watch-snapshot",
+  "mesh_root": "/home/galeavenworth/lab",
+  "workspace_scan_depth": 1
+}

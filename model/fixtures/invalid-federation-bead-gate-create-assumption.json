@@ -1,0 +1,9 @@
+{
+  "record_type": "federation_gate_ref",
+  "gate_kind": "bead-check",
+  "check_command": "bd gate check --type=bead --dry-run",
+  "await_id": "lab:lab-0c4",
+  "create_command_modeled": true,
+  "reason": "This incorrectly models bead gate creation before command proof.",
+  "gate_create_bead_assumption": true
+}

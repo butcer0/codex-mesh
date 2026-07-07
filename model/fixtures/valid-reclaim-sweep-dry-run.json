@@ -1,0 +1,148 @@
+{
+  "record_type": "reclaim_sweep_result",
+  "policy": {
+    "record_type": "reclaim_policy",
+    "mode": "diagnose_claimed_without_agent",
+    "stale_timer": "none",
+    "policy_authority": {
+      "kind": "beads",
+      "label": "mesh-vml",
+      "ref": "operator gate closed with no stale timer"
+    },
+    "candidate_source": "read-time-mesh-beads-join",
+    "agent_identity_source": "stable_or_derivable_agent_name",
+    "transcript_source": "transcript-path-or-beads-envelope",
+    "default_execution": "dry_run",
+    "release_commands": [
+      "bd update <task> --status open",
+      "bd assign <task> \"\""
+    ],
+    "tracking_bead_commands": [
+      "bd create <tracking-bead>",
+      "bd comments add <tracking-bead> <message-or-file>"
+    ],
+    "evidence": [
+      {
+        "kind": "beads",
+        "label": "operator-policy",
+        "ref": "mesh-vml"
+      }
+    ]
+  },
+  "source_snapshot": {
+    "exposure": "read-time-join",
+    "beads_command": "bd list --status=open,in_progress,hooked --json",
+    "generated_at_unix": 1783382030,
+    "agents": [],
+    "tasks": [
+      {
+        "id": "mesh-mol-s85",
+        "title": "mint-cue: reclaim policy semantics + fail-closed fixtures",
+        "status": "in_progress",
+        "assignee": "galeavenworth-personal"
+      }
+    ],
+    "records": [
+      {
+        "classification": "task_without_live_session",
+        "task_id": "mesh-mol-s85",
+        "task": {
+          "id": "mesh-mol-s85",
+          "title": "mint-cue: reclaim policy semantics + fail-closed fixtures",
+          "status": "in_progress",
+          "assignee": "galeavenworth-personal"
+        },
+        "resume_signal": true
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "record_type": "reclaim_decision",
+      "task": "mesh-mol-s85",
+      "diagnosis": {
+        "record_type": "reclaim_diagnosis",
+        "task": "mesh-mol-s85",
+        "task_status": "in_progress",
+        "assignee": "galeavenworth-personal",
+        "agent_identity_source": "stable_or_derivable_agent_name",
+        "expected_agent_address": "pm-reclaim-s85",
+        "live_agent_match": false,
+        "transcript": {
+          "exists": true,
+          "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi",
+          "bytes": 4096
+        },
+        "classification": "claimed_without_live_agent_transcript_backed",
+        "evidence": [
+          {
+            "kind": "transcript",
+            "label": "transcript-history",
+            "path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/28.ansi"
+          }
+        ]
+      },
+      "action": "requeue_transcript_backed_work",
+      "dry_run": true,
+      "planned_commands": [
+        {
+          "command": "bd update <task> --status open",
+          "dry_run": true,
+          "executed": false
+        },
+        {
+          "command": "bd assign <task> \"\"",
+          "dry_run": true,
+          "executed": false
+        },
+        {
+          "command": "bd comments add <task> <message-or-file>",
+          "dry_run": true,
+          "executed": false
+        }
+      ],
+      "result_comment_required": true,
+      "evidence": [
+        {
+          "kind": "predicate",
+          "label": "requeue-predicate",
+          "command": "mesh goal check --phase close reclaim.json",
+          "exit_code": 0
+        }
+      ]
+    }
+  ],
+  "wisp_surface": "bd mol wisp create <formula> --dry-run",
+  "result": {
+    "record_type": "result_envelope",
+    "task": "mesh-mol-s85",
+    "session_id": "28",
+    "address": "codex-mesh-pm",
+    "status": "completed",
+    "completed_at_unix": 1783382030,
+    "evidence": [
+      {
+        "kind": "predicate",
+        "label": "close",
+        "command": "mesh goal check --phase close reclaim.json",
+        "exit_code": 0
+      }
+    ],
+    "role": "implementation",
+    "payload": {
+      "kind": "implementation",
+      "summary": "Reclaim sweep dry-run emitted a transcript-backed requeue decision.",
+      "changed_files": [
+        "/home/galeavenworth/lab/codex-mesh/model/contract.cue"
+      ],
+      "verification": [
+        {
+          "kind": "command",
+          "label": "verify",
+          "command": "./scripts/verify.sh",
+          "exit_code": 0
+        }
+      ]
+    }
+  }
+}

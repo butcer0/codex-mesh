@@ -10,7 +10,7 @@
     {
       "kind": "file",
       "label": "reviewed contract",
-      "path": "/workspace/codex-mesh/model/contract.cue"
+      "path": "/home/galeavenworth/lab/codex-mesh/model/contract.cue"
     }
   ],
   "payload": {

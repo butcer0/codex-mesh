@@ -7,7 +7,7 @@
     "role": "implementation",
     "address_prefix": "codex-wave",
     "concurrency_cap": 1,
-    "workdir": "/workspace/codex-mesh",
+    "workdir": "/home/galeavenworth/lab/codex-mesh",
     "prompt_mode": "goal-first",
     "message_template": "/goal complete {{task}} using the attached Beads context",
     "frontier_command": "bd ready --parent <epic> --exclude-type epic --json",

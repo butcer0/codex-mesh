@@ -1,0 +1,6 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-parent",
+  "composition_source": "bd-formula",
+  "codex_subagent_lifecycle": "native-subagent-state"
+}

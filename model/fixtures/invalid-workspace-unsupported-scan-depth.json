@@ -1,0 +1,8 @@
+{
+  "record_type": "workspace_validation",
+  "status": "valid",
+  "workspace_scan_depth": 2,
+  "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
+  "workspaces": [],
+  "errors": []
+}

@@ -1,0 +1,535 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-parent",
+  "composition_source": "bd-formula",
+  "close_policy": "children-green-integration-green-and-result-envelope",
+  "formula": "cue-first-feature",
+  "integration_predicate": {
+    "record_type": "goal_predicate",
+    "task": "mesh-mol-parent",
+    "description": "The composed formula has closed all required children and the parent integration predicate is green.",
+    "frozen": true,
+    "red_check_required": true,
+    "close_requires_green": true,
+    "check": {
+      "kind": "command",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
+      "command": ["mesh", "goal", "check", "--phase", "close", "/tmp/codex-mesh-campaign/predicates/mesh-mol-parent.json"],
+      "expected_exit_code": 0,
+      "side_effect_free": true,
+      "timeout_seconds": 120
+    },
+    "adversarial": [
+      {
+        "label": "child-green-only",
+        "reason": "Child result envelopes alone do not prove the parent integration outcome.",
+        "expected_status": "red"
+      }
+    ],
+    "integration_scope": "formula",
+    "composition_source": "bd-formula",
+    "proof_obligations": [
+      "parent-predicate-distinct",
+      "formula-step-ordering",
+      "all-required-child-closes-green",
+      "structured-envelope-evidence"
+    ],
+    "evidence_commands": [
+      {
+        "purpose": "formula-visibility",
+        "primitive": "bd formula list",
+        "command": "bd formula list",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "text",
+        "exit_code": 0
+      },
+      {
+        "purpose": "molecule-structure",
+        "primitive": "bd mol wisp create <formula> --dry-run",
+        "command": "bd mol wisp create cue-first-feature --dry-run",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "json",
+        "exit_code": 0
+      },
+      {
+        "purpose": "parent-integration-evaluation",
+        "primitive": "mesh goal check --phase close <predicate>",
+        "command": "mesh goal check --phase close /tmp/codex-mesh-campaign/predicates/mesh-mol-parent.json",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "json",
+        "exit_code": 0
+      }
+    ]
+  },
+  "child_tasks": ["mesh-mol-child-a", "mesh-mol-child-b"],
+  "child_predicates": [
+    {
+      "record_type": "goal_predicate",
+      "task": "mesh-mol-child-a",
+      "description": "Child A closes its local goal.",
+      "frozen": true,
+      "red_check_required": true,
+      "close_requires_green": true,
+      "check": {
+        "kind": "command",
+        "cwd": "/home/galeavenworth/lab/codex-mesh",
+        "command": ["true"],
+        "expected_exit_code": 0,
+        "side_effect_free": true
+      },
+      "adversarial": [
+        {
+          "label": "child-a-red",
+          "reason": "Child A must prove its own predicate before parent close.",
+          "expected_status": "red"
+        }
+      ]
+    },
+    {
+      "record_type": "goal_predicate",
+      "task": "mesh-mol-child-b",
+      "description": "Child B closes its local goal.",
+      "frozen": true,
+      "red_check_required": true,
+      "close_requires_green": true,
+      "check": {
+        "kind": "command",
+        "cwd": "/home/galeavenworth/lab/codex-mesh",
+        "command": ["true"],
+        "expected_exit_code": 0,
+        "side_effect_free": true
+      },
+      "adversarial": [
+        {
+          "label": "child-b-red",
+          "reason": "Child B must prove its own predicate before parent close.",
+          "expected_status": "red"
+        }
+      ]
+    }
+  ],
+  "required_child_closes": [
+    {
+      "task": "mesh-mol-child-a",
+      "predicate": {
+        "record_type": "goal_predicate",
+        "task": "mesh-mol-child-a",
+        "description": "Child A closes its local goal.",
+        "frozen": true,
+        "red_check_required": true,
+        "close_requires_green": true,
+        "check": {
+          "kind": "command",
+          "cwd": "/home/galeavenworth/lab/codex-mesh",
+          "command": ["true"],
+          "expected_exit_code": 0,
+          "side_effect_free": true
+        },
+        "adversarial": [
+          {
+            "label": "child-a-red",
+            "reason": "Child A must prove its own predicate before parent close.",
+            "expected_status": "red"
+          }
+        ]
+      },
+      "close": {
+        "record_type": "goal_loop_close",
+        "task": "mesh-mol-child-a",
+        "predicate": {
+          "record_type": "goal_predicate",
+          "task": "mesh-mol-child-a",
+          "description": "Child A closes its local goal.",
+          "frozen": true,
+          "red_check_required": true,
+          "close_requires_green": true,
+          "check": {
+            "kind": "command",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
+            "command": ["true"],
+            "expected_exit_code": 0,
+            "side_effect_free": true
+          },
+          "adversarial": [
+            {
+              "label": "child-a-red",
+              "reason": "Child A must prove its own predicate before parent close.",
+              "expected_status": "red"
+            }
+          ]
+        },
+        "close_evaluation": {
+          "record_type": "goal_evaluation",
+          "task": "mesh-mol-child-a",
+          "phase": "close",
+          "status": "green",
+          "exit_code": 0,
+          "checked_at_unix": 1783366000,
+          "predicate": {
+            "record_type": "goal_predicate",
+            "task": "mesh-mol-child-a",
+            "description": "Child A closes its local goal.",
+            "frozen": true,
+            "red_check_required": true,
+            "close_requires_green": true,
+            "check": {
+              "kind": "command",
+              "cwd": "/home/galeavenworth/lab/codex-mesh",
+              "command": ["true"],
+              "expected_exit_code": 0,
+              "side_effect_free": true
+            },
+            "adversarial": [
+              {
+                "label": "child-a-red",
+                "reason": "Child A must prove its own predicate before parent close.",
+                "expected_status": "red"
+              }
+            ]
+          },
+          "evidence": {
+            "kind": "predicate",
+            "label": "child-a-close",
+            "command": "true",
+            "exit_code": 0
+          }
+        },
+        "result": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-child-a",
+          "session_id": "11",
+          "address": "composition-child-a",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783366000,
+          "evidence": [
+            {
+              "kind": "predicate",
+              "label": "child-a-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "Child A completed.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "predicate",
+                "label": "child-a-close",
+                "command": "true",
+                "exit_code": 0
+              }
+            ]
+          }
+        }
+      },
+      "result": {
+        "record_type": "result_envelope",
+        "task": "mesh-mol-child-a",
+        "session_id": "11",
+        "address": "composition-child-a",
+        "role": "implementation",
+        "status": "completed",
+        "completed_at_unix": 1783366000,
+        "evidence": [
+          {
+            "kind": "predicate",
+            "label": "child-a-close",
+            "command": "true",
+            "exit_code": 0
+          }
+        ],
+        "payload": {
+          "kind": "implementation",
+          "summary": "Child A completed.",
+          "changed_files": [],
+          "verification": [
+            {
+              "kind": "predicate",
+              "label": "child-a-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ]
+        }
+      },
+      "expected_result_payload": "implementation",
+      "formula_step": "design",
+      "required": true,
+      "envelope_evidence": {
+        "record_type": "composition_envelope_evidence",
+        "source": "bd-comments-json",
+        "task": "mesh-mol-child-a",
+        "exact_match_count": 1,
+        "envelope": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-child-a",
+          "session_id": "11",
+          "address": "composition-child-a",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783366000,
+          "evidence": [
+            {
+              "kind": "predicate",
+              "label": "child-a-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "Child A completed.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "predicate",
+                "label": "child-a-close",
+                "command": "true",
+                "exit_code": 0
+              }
+            ]
+          }
+        },
+        "evidence_command": {
+          "purpose": "child-result-envelope",
+          "primitive": "bd comments --json",
+          "command": "bd comments mesh-mol-child-a --json",
+          "side_effect_free": true,
+          "required": true,
+          "output_format": "json",
+          "exit_code": 0
+        }
+      }
+    },
+    {
+      "task": "mesh-mol-child-b",
+      "predicate": {
+        "record_type": "goal_predicate",
+        "task": "mesh-mol-child-b",
+        "description": "Child B closes its local goal.",
+        "frozen": true,
+        "red_check_required": true,
+        "close_requires_green": true,
+        "check": {
+          "kind": "command",
+          "cwd": "/home/galeavenworth/lab/codex-mesh",
+          "command": ["true"],
+          "expected_exit_code": 0,
+          "side_effect_free": true
+        },
+        "adversarial": [
+          {
+            "label": "child-b-red",
+            "reason": "Child B must prove its own predicate before parent close.",
+            "expected_status": "red"
+          }
+        ]
+      },
+      "close": {
+        "record_type": "goal_loop_close",
+        "task": "mesh-mol-child-b",
+        "predicate": {
+          "record_type": "goal_predicate",
+          "task": "mesh-mol-child-b",
+          "description": "Child B closes its local goal.",
+          "frozen": true,
+          "red_check_required": true,
+          "close_requires_green": true,
+          "check": {
+            "kind": "command",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
+            "command": ["true"],
+            "expected_exit_code": 0,
+            "side_effect_free": true
+          },
+          "adversarial": [
+            {
+              "label": "child-b-red",
+              "reason": "Child B must prove its own predicate before parent close.",
+              "expected_status": "red"
+            }
+          ]
+        },
+        "close_evaluation": {
+          "record_type": "goal_evaluation",
+          "task": "mesh-mol-child-b",
+          "phase": "close",
+          "status": "green",
+          "exit_code": 0,
+          "checked_at_unix": 1783366000,
+          "predicate": {
+            "record_type": "goal_predicate",
+            "task": "mesh-mol-child-b",
+            "description": "Child B closes its local goal.",
+            "frozen": true,
+            "red_check_required": true,
+            "close_requires_green": true,
+            "check": {
+              "kind": "command",
+              "cwd": "/home/galeavenworth/lab/codex-mesh",
+              "command": ["true"],
+              "expected_exit_code": 0,
+              "side_effect_free": true
+            },
+            "adversarial": [
+              {
+                "label": "child-b-red",
+                "reason": "Child B must prove its own predicate before parent close.",
+                "expected_status": "red"
+              }
+            ]
+          },
+          "evidence": {
+            "kind": "predicate",
+            "label": "child-b-close",
+            "command": "true",
+            "exit_code": 0
+          }
+        },
+        "result": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-child-b",
+          "session_id": "12",
+          "address": "composition-child-b",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783366000,
+          "evidence": [
+            {
+              "kind": "predicate",
+              "label": "child-b-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "Child B completed.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "predicate",
+                "label": "child-b-close",
+                "command": "true",
+                "exit_code": 0
+              }
+            ]
+          }
+        }
+      },
+      "result": {
+        "record_type": "result_envelope",
+        "task": "mesh-mol-child-b",
+        "session_id": "12",
+        "address": "composition-child-b",
+        "role": "implementation",
+        "status": "completed",
+        "completed_at_unix": 1783366000,
+        "evidence": [
+          {
+            "kind": "predicate",
+            "label": "child-b-close",
+            "command": "true",
+            "exit_code": 0
+          }
+        ],
+        "payload": {
+          "kind": "implementation",
+          "summary": "Child B completed.",
+          "changed_files": [],
+          "verification": [
+            {
+              "kind": "predicate",
+              "label": "child-b-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ]
+        }
+      },
+      "expected_result_payload": "implementation",
+      "formula_step": "spec",
+      "required": true,
+      "envelope_evidence": {
+        "record_type": "composition_envelope_evidence",
+        "source": "bd-comments-json",
+        "task": "mesh-mol-child-b",
+        "exact_match_count": 1,
+        "envelope": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-child-b",
+          "session_id": "12",
+          "address": "composition-child-b",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783366000,
+          "evidence": [
+            {
+              "kind": "predicate",
+              "label": "child-b-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "Child B completed.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "predicate",
+                "label": "child-b-close",
+                "command": "true",
+                "exit_code": 0
+              }
+            ]
+          }
+        },
+        "evidence_command": {
+          "purpose": "child-result-envelope",
+          "primitive": "bd comments --json",
+          "command": "bd comments mesh-mol-child-b --json",
+          "side_effect_free": true,
+          "required": true,
+          "output_format": "json",
+          "exit_code": 0
+        }
+      }
+    }
+  ],
+  "evidence_commands": [
+    {
+      "purpose": "formula-visibility",
+      "primitive": "bd formula list",
+      "command": "bd formula list",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "text",
+      "exit_code": 0
+    },
+    {
+      "purpose": "molecule-structure",
+      "primitive": "bd mol wisp create <formula> --dry-run",
+      "command": "bd mol wisp create cue-first-feature --dry-run",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    },
+    {
+      "purpose": "repository-verifier",
+      "primitive": "./scripts/verify.sh",
+      "command": "./scripts/verify.sh",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "exit-code",
+      "exit_code": 0
+    }
+  ]
+}

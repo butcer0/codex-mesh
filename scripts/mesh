@@ -20,6 +20,9 @@ Usage: mesh init [--dry-run] [--json] [--prefix PREFIX] [--remote URL] DIR
        mesh watch [--once] [--json|--ndjson] [--include-detached] [--interval SECONDS] [--idle-threshold SECONDS] [--mesh-root DIR]
        mesh context bind --mesh-root DIR [--listen-on ADDRESS] [--json]
        mesh context show|resolve [--mesh-root DIR] [--cwd DIR] [--json]
+       mesh workspaces --json [--mesh-root DIR]
+       mesh session render [--profile operator] [--json] [--output FILE.kitty-session] [--mesh-root DIR] [--watch-snapshot WATCH.json]
+       mesh cookbook render --cookbook COOKBOOK.json --role ROLE --task TASK [--title TITLE] [--predicate PREDICATE.json] [--json]
        mesh goal check [--phase red-check|iteration|close] PREDICATE.json
        mesh wave dispatch [--frontier READY.json] REQUEST.json
        mesh wave status [--frontier READY.json] REQUEST.json
@@ -207,6 +210,50 @@ context)
 	shift
 	codex_mesh_need python3
 	"$SCRIPT_DIR/codex-mesh-context" "$@"
+	;;
+workspaces)
+	shift
+	codex_mesh_need bd
+	codex_mesh_need cue
+	codex_mesh_need python3
+	mesh_root="${CODEX_MESH_ROOT:-}"
+	json=0
+	while (($# > 0)); do
+		case "$1" in
+		--json)
+			json=1
+			shift
+			;;
+		--mesh-root)
+			(($# >= 2)) || codex_mesh_die "mesh workspaces: --mesh-root requires a value"
+			mesh_root="$2"
+			shift 2
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			codex_mesh_die "mesh workspaces: unknown option: $1"
+			;;
+		esac
+	done
+	((json == 1)) || codex_mesh_die "mesh workspaces: only --json output is supported"
+	[[ -z "$mesh_root" ]] || mesh_root="$(codex_mesh_abs_dir "$mesh_root")"
+	args=(--validate)
+	[[ -n "$mesh_root" ]] && args+=(--mesh-root "$mesh_root")
+	"$SCRIPT_DIR/codex-mesh-workspaces" "${args[@]}"
+	;;
+session)
+	shift
+	codex_mesh_need python3
+	"$SCRIPT_DIR/codex-mesh-session" "$@"
+	;;
+cookbook)
+	shift
+	codex_mesh_need cue
+	codex_mesh_need python3
+	"$SCRIPT_DIR/codex-mesh-cookbook" "$@"
 	;;
 goal)
 	shift

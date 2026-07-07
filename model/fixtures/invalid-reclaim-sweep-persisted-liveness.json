@@ -1,0 +1,72 @@
+{
+  "record_type": "reclaim_sweep_result",
+  "policy": {
+    "record_type": "reclaim_policy",
+    "mode": "diagnose_claimed_without_agent",
+    "stale_timer": "none",
+    "policy_authority": {
+      "kind": "beads",
+      "label": "mesh-vml",
+      "ref": "operator gate"
+    },
+    "candidate_source": "read-time-mesh-beads-join",
+    "agent_identity_source": "stable_or_derivable_agent_name",
+    "transcript_source": "transcript-path-or-beads-envelope",
+    "default_execution": "dry_run",
+    "release_commands": [
+      "bd update <task> --status open",
+      "bd assign <task> \"\""
+    ],
+    "tracking_bead_commands": [
+      "bd create <tracking-bead>",
+      "bd comments add <tracking-bead> <message-or-file>"
+    ],
+    "evidence": [
+      {
+        "kind": "beads",
+        "label": "operator-policy",
+        "ref": "mesh-vml"
+      }
+    ]
+  },
+  "source_snapshot": {
+    "exposure": "read-time-join",
+    "beads_command": "bd list --status=open,in_progress,hooked --json",
+    "agents": [],
+    "tasks": [],
+    "records": []
+  },
+  "decisions": [],
+  "wisp_surface": "bd mol wisp create <formula> --dry-run",
+  "result": {
+    "record_type": "result_envelope",
+    "task": "mesh-mol-s85",
+    "session_id": "28",
+    "address": "codex-mesh-pm",
+    "status": "completed",
+    "completed_at_unix": 1783382030,
+    "evidence": [
+      {
+        "kind": "predicate",
+        "label": "close",
+        "command": "mesh goal check",
+        "exit_code": 0
+      }
+    ],
+    "role": "implementation",
+    "payload": {
+      "kind": "implementation",
+      "summary": "bad sweep",
+      "changed_files": [],
+      "verification": [
+        {
+          "kind": "command",
+          "label": "verify",
+          "command": "./scripts/verify.sh",
+          "exit_code": 0
+        }
+      ]
+    }
+  },
+  "durable_store": true
+}

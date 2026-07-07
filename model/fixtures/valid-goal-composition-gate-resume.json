@@ -1,0 +1,319 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-gate-parent",
+  "composition_source": "bd-gate-resume",
+  "close_policy": "children-green-integration-green-and-result-envelope",
+  "integration_predicate": {
+    "record_type": "goal_predicate",
+    "task": "mesh-mol-gate-parent",
+    "description": "The gated composition resumes only after Beads gate and gated-ready evidence are green.",
+    "frozen": true,
+    "red_check_required": true,
+    "close_requires_green": true,
+    "check": {
+      "kind": "command",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
+      "command": ["mesh", "goal", "check", "--phase", "close", "/tmp/mesh-mol-gate-parent.json"],
+      "expected_exit_code": 0,
+      "side_effect_free": true
+    },
+    "adversarial": [
+      {
+        "label": "ordinary-ready-only",
+        "reason": "A gate-required close cannot be proven by ordinary ready output.",
+        "expected_status": "red"
+      }
+    ],
+    "integration_scope": "gate-resume",
+    "composition_source": "bd-gate-resume",
+    "proof_obligations": [
+      "parent-predicate-distinct",
+      "gate-satisfaction",
+      "all-required-child-closes-green"
+    ],
+    "evidence_commands": [
+      {
+        "purpose": "gate-satisfaction",
+        "primitive": "bd gate check --dry-run",
+        "command": "bd gate check --dry-run",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "exit-code",
+        "exit_code": 0
+      },
+      {
+        "purpose": "gate-satisfaction",
+        "primitive": "bd ready --gated --json",
+        "command": "bd ready --gated --json",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "json",
+        "exit_code": 0
+      }
+    ]
+  },
+  "child_tasks": ["mesh-mol-gate-child"],
+  "child_predicates": [
+    {
+      "record_type": "goal_predicate",
+      "task": "mesh-mol-gate-child",
+      "description": "The gated child closes its local predicate.",
+      "frozen": true,
+      "red_check_required": true,
+      "close_requires_green": true,
+      "check": {
+        "kind": "command",
+        "cwd": "/home/galeavenworth/lab/codex-mesh",
+        "command": ["true"],
+        "expected_exit_code": 0,
+        "side_effect_free": true
+      },
+      "adversarial": [
+        {
+          "label": "child-red",
+          "reason": "The child must close before the gate-resume parent close.",
+          "expected_status": "red"
+        }
+      ]
+    }
+  ],
+  "required_child_closes": [
+    {
+      "task": "mesh-mol-gate-child",
+      "predicate": {
+        "record_type": "goal_predicate",
+        "task": "mesh-mol-gate-child",
+        "description": "The gated child closes its local predicate.",
+        "frozen": true,
+        "red_check_required": true,
+        "close_requires_green": true,
+        "check": {
+          "kind": "command",
+          "cwd": "/home/galeavenworth/lab/codex-mesh",
+          "command": ["true"],
+          "expected_exit_code": 0,
+          "side_effect_free": true
+        },
+        "adversarial": [
+          {
+            "label": "child-red",
+            "reason": "The child must close before the gate-resume parent close.",
+            "expected_status": "red"
+          }
+        ]
+      },
+      "close": {
+        "record_type": "goal_loop_close",
+        "task": "mesh-mol-gate-child",
+        "predicate": {
+          "record_type": "goal_predicate",
+          "task": "mesh-mol-gate-child",
+          "description": "The gated child closes its local predicate.",
+          "frozen": true,
+          "red_check_required": true,
+          "close_requires_green": true,
+          "check": {
+            "kind": "command",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
+            "command": ["true"],
+            "expected_exit_code": 0,
+            "side_effect_free": true
+          },
+          "adversarial": [
+            {
+              "label": "child-red",
+              "reason": "The child must close before the gate-resume parent close.",
+              "expected_status": "red"
+            }
+          ]
+        },
+        "close_evaluation": {
+          "record_type": "goal_evaluation",
+          "task": "mesh-mol-gate-child",
+          "phase": "close",
+          "status": "green",
+          "exit_code": 0,
+          "checked_at_unix": 1783366300,
+          "predicate": {
+            "record_type": "goal_predicate",
+            "task": "mesh-mol-gate-child",
+            "description": "The gated child closes its local predicate.",
+            "frozen": true,
+            "red_check_required": true,
+            "close_requires_green": true,
+            "check": {
+              "kind": "command",
+              "cwd": "/home/galeavenworth/lab/codex-mesh",
+              "command": ["true"],
+              "expected_exit_code": 0,
+              "side_effect_free": true
+            },
+            "adversarial": [
+              {
+                "label": "child-red",
+                "reason": "The child must close before the gate-resume parent close.",
+                "expected_status": "red"
+              }
+            ]
+          },
+          "evidence": {
+            "kind": "predicate",
+            "label": "gate-child-close",
+            "command": "true",
+            "exit_code": 0
+          }
+        },
+        "result": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-gate-child",
+          "session_id": "15",
+          "address": "composition-gate-child",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783366300,
+          "evidence": [
+            {
+              "kind": "predicate",
+              "label": "gate-child-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "Gate child completed.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "predicate",
+                "label": "gate-child-close",
+                "command": "true",
+                "exit_code": 0
+              }
+            ]
+          }
+        }
+      },
+      "result": {
+        "record_type": "result_envelope",
+        "task": "mesh-mol-gate-child",
+        "session_id": "15",
+        "address": "composition-gate-child",
+        "role": "implementation",
+        "status": "completed",
+        "completed_at_unix": 1783366300,
+        "evidence": [
+          {
+            "kind": "predicate",
+            "label": "gate-child-close",
+            "command": "true",
+            "exit_code": 0
+          }
+        ],
+        "payload": {
+          "kind": "implementation",
+          "summary": "Gate child completed.",
+          "changed_files": [],
+          "verification": [
+            {
+              "kind": "predicate",
+              "label": "gate-child-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ]
+        }
+      },
+      "expected_result_payload": "implementation",
+      "formula_step": "rollout",
+      "required": true,
+      "envelope_evidence": {
+        "record_type": "composition_envelope_evidence",
+        "source": "bd-comments-json",
+        "task": "mesh-mol-gate-child",
+        "exact_match_count": 1,
+        "envelope": {
+          "record_type": "result_envelope",
+          "task": "mesh-mol-gate-child",
+          "session_id": "15",
+          "address": "composition-gate-child",
+          "role": "implementation",
+          "status": "completed",
+          "completed_at_unix": 1783366300,
+          "evidence": [
+            {
+              "kind": "predicate",
+              "label": "gate-child-close",
+              "command": "true",
+              "exit_code": 0
+            }
+          ],
+          "payload": {
+            "kind": "implementation",
+            "summary": "Gate child completed.",
+            "changed_files": [],
+            "verification": [
+              {
+                "kind": "predicate",
+                "label": "gate-child-close",
+                "command": "true",
+                "exit_code": 0
+              }
+            ]
+          }
+        },
+        "evidence_command": {
+          "purpose": "child-result-envelope",
+          "primitive": "bd comments --json",
+          "command": "bd comments mesh-mol-gate-child --json",
+          "side_effect_free": true,
+          "required": true,
+          "output_format": "json",
+          "exit_code": 0
+        }
+      }
+    }
+  ],
+  "evidence_commands": [
+    {
+      "purpose": "gate-satisfaction",
+      "primitive": "bd gate check --dry-run",
+      "command": "bd gate check --dry-run",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "exit-code",
+      "exit_code": 0
+    },
+    {
+      "purpose": "gate-satisfaction",
+      "primitive": "bd ready --gated --json",
+      "command": "bd ready --gated --json",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    }
+  ],
+  "gate_resume": {
+    "gate_required": true,
+    "gate_type": "human",
+    "gate_check": {
+      "purpose": "gate-satisfaction",
+      "primitive": "bd gate check --dry-run",
+      "command": "bd gate check --dry-run",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "exit-code",
+      "exit_code": 0
+    },
+    "ready_evidence": {
+      "purpose": "gate-satisfaction",
+      "primitive": "bd ready --gated --json",
+      "command": "bd ready --gated --json",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    }
+  }
+}

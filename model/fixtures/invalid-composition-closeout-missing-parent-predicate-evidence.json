@@ -1,0 +1,19 @@
+{
+  "record_type": "composition_closeout",
+  "result": {
+    "record_type": "result_envelope",
+    "task": "mesh-mol-parent",
+    "session_id": "17",
+    "address": "composition-parent",
+    "role": "implementation",
+    "status": "completed",
+    "completed_at_unix": 1783366500,
+    "evidence": [],
+    "payload": {
+      "kind": "implementation",
+      "summary": "Invalid because parent result has no predicate evidence.",
+      "changed_files": [],
+      "verification": []
+    }
+  }
+}

@@ -1,0 +1,551 @@
+{
+  "record_type": "context_cookbook",
+  "cookbook_id": "outcome-cookbook",
+  "parent_task": "mesh-mol-olw",
+  "outcome_goal": "Assemble validated Codex worker context from typed cookbook data.",
+  "catalog_citations": [
+    {
+      "path": "docs/catalog/README.md",
+      "line_range": "3-76",
+      "reason": "Accepted catalog set and cookbook row."
+    },
+    {
+      "path": "docs/catalog/beads.md",
+      "line_range": "57-104",
+      "reason": "Beads owns durable task graph and evidence rails."
+    },
+    {
+      "path": "docs/catalog/codex.md",
+      "line_range": "57-93",
+      "reason": "Codex owns launch and native context surfaces."
+    },
+    {
+      "path": "model/contract.cue",
+      "line_range": "518-660",
+      "reason": "Goal predicates, result envelopes, and wave prompt invariants."
+    }
+  ],
+  "official_docs": [
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/prompting",
+      "section": "goal-mode",
+      "manual_line_range": "505-530",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/cli/features",
+      "section": "model-guidance",
+      "manual_line_range": "5578-5588",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/concepts/sandboxing",
+      "section": "sandbox-approval",
+      "manual_line_range": "2013-2044",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/guides/agents-md",
+      "section": "agents-md",
+      "manual_line_range": "7577-7591",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/skills",
+      "section": "skills",
+      "manual_line_range": "7339-7360",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/mcp",
+      "section": "mcp",
+      "manual_line_range": "7924-7948",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/noninteractive",
+      "section": "noninteractive",
+      "manual_line_range": "8877-8965",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    },
+    {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/concepts/subagents",
+      "section": "subagents",
+      "manual_line_range": "10560-10638",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    }
+  ],
+  "context_bundle": {
+    "sources": [
+      {
+        "surface": "agents_md",
+        "ref": "AGENTS.md",
+        "redaction": "none",
+        "snapshot_evidence": {
+          "kind": "file",
+          "label": "agents instructions",
+          "exit_code": 0,
+          "output_excerpt": "passed",
+          "path": "/home/galeavenworth/lab/codex-mesh/AGENTS.md"
+        }
+      },
+      {
+        "surface": "skill",
+        "ref": "skills/codex-mesh/SKILL.md",
+        "redaction": "none"
+      },
+      {
+        "surface": "beads_comment",
+        "ref": "mesh-mol-0u3",
+        "redaction": "none"
+      }
+    ],
+    "allowed_surfaces": [
+      "agents_md",
+      "skill",
+      "beads_comment",
+      "catalog_citation",
+      "official_doc"
+    ],
+    "hydration_order": [
+      "agents_md",
+      "skill",
+      "beads_comment"
+    ],
+    "source_snapshots_required": true
+  },
+  "role_bundles": [
+    {
+      "role": "implementation",
+      "duty": "Perform the implementation role using the typed cookbook context.",
+      "goal": "Return only evidence that can be normalized into the expected result envelope.",
+      "expected_result_payload": "implementation",
+      "success_criteria": {
+        "record_type": "goal_predicate",
+        "task": "mesh-mol-0u3",
+        "description": "The cookbook task closes only after the typed contract, fixtures, verifier wiring, and result envelope exist.",
+        "frozen": true,
+        "red_check_required": true,
+        "close_requires_green": true,
+        "check": {
+          "kind": "command",
+          "cwd": "/home/galeavenworth/lab/codex-mesh",
+          "command": [
+            "bash",
+            "-lc",
+            "rg -q #ContextCookbook model/contract.cue && ./scripts/verify.sh"
+          ],
+          "expected_exit_code": 0,
+          "side_effect_free": true,
+          "timeout_seconds": 120
+        },
+        "adversarial": [
+          {
+            "label": "missing cookbook contract",
+            "reason": "The predicate must be red before cookbook CUE and fixtures exist.",
+            "expected_status": "red"
+          }
+        ]
+      },
+      "context": {
+        "sources": [
+          {
+            "surface": "agents_md",
+            "ref": "AGENTS.md",
+            "redaction": "none",
+            "snapshot_evidence": {
+              "kind": "file",
+              "label": "agents instructions",
+              "exit_code": 0,
+              "output_excerpt": "passed",
+              "path": "/home/galeavenworth/lab/codex-mesh/AGENTS.md"
+            }
+          },
+          {
+            "surface": "skill",
+            "ref": "skills/codex-mesh/SKILL.md",
+            "redaction": "none"
+          },
+          {
+            "surface": "beads_comment",
+            "ref": "mesh-mol-0u3",
+            "redaction": "none"
+          }
+        ],
+        "allowed_surfaces": [
+          "agents_md",
+          "skill",
+          "beads_comment",
+          "catalog_citation",
+          "official_doc"
+        ],
+        "hydration_order": [
+          "agents_md",
+          "skill",
+          "beads_comment"
+        ],
+        "source_snapshots_required": true
+      },
+      "launch_policy": {
+        "mode": "interactive_kitty",
+        "sandbox": {
+          "sandbox_mode": "workspace-write",
+          "approval_policy": "on-request",
+          "full_access_bypass": false
+        },
+        "model_policy": {
+          "recommended_model": "gpt-5.5",
+          "selected_model": "gpt-5.5",
+          "reasoning_effort": "medium",
+          "official_doc": {
+            "source": "OpenAI Codex manual",
+            "url": "https://developers.openai.com/codex/cli/features",
+            "section": "model-guidance",
+            "manual_line_range": "5578-5588",
+            "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+          }
+        },
+        "profile": "default",
+        "web_search": "cached",
+        "mcp_health": "redacted-health-only",
+        "output_schema_required": false,
+        "channel": "spawn",
+        "kitty_context": {
+          "record_type": "kitty_context_resolution",
+          "source": "mesh-root-config",
+          "mesh_root": "/home/galeavenworth/lab",
+          "cwd": "/home/galeavenworth/lab/codex-mesh",
+          "kitty_listen_on": "unix:@mesh-lab",
+          "config_path": "/home/galeavenworth/.config/codex-mesh/contexts.json"
+        }
+      },
+      "evidence_required": [
+        "predicate",
+        "command"
+      ],
+      "output_contract": {
+        "record_type": "result_envelope",
+        "task": "mesh-mol-0u3",
+        "session_id": "7",
+        "address": "cookbook-implementation",
+        "role": "implementation",
+        "status": "completed",
+        "completed_at_unix": 1783365600,
+        "evidence": [
+          {
+            "kind": "predicate",
+            "label": "close predicate",
+            "exit_code": 0,
+            "output_excerpt": "passed",
+            "command": "mesh goal check --phase close /tmp/codex-mesh-campaign/predicates/mesh-mol-0u3.json"
+          }
+        ],
+        "payload": {
+          "kind": "implementation",
+          "summary": "Cookbook CUE and fixtures were verified.",
+          "changed_files": [
+            "/home/galeavenworth/lab/codex-mesh/model/contract.cue"
+          ],
+          "verification": [
+            {
+              "kind": "command",
+              "label": "verify",
+              "exit_code": 0,
+              "output_excerpt": "passed",
+              "command": "./scripts/verify.sh"
+            }
+          ]
+        }
+      },
+      "stop_rules": {
+        "close_policy": "green-predicate-and-result-envelope",
+        "red_check_required": true,
+        "close_requires_green": true,
+        "result_envelope_required": true,
+        "retry_budget": 1,
+        "block_conditions": [
+          "missing predicate evidence",
+          "missing result envelope"
+        ]
+      }
+    }
+  ],
+  "launch_policy": {
+    "mode": "interactive_kitty",
+    "sandbox": {
+      "sandbox_mode": "workspace-write",
+      "approval_policy": "on-request",
+      "full_access_bypass": false
+    },
+    "model_policy": {
+      "recommended_model": "gpt-5.5",
+      "selected_model": "gpt-5.5",
+      "reasoning_effort": "medium",
+      "official_doc": {
+        "source": "OpenAI Codex manual",
+        "url": "https://developers.openai.com/codex/cli/features",
+        "section": "model-guidance",
+        "manual_line_range": "5578-5588",
+        "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+      }
+    },
+    "profile": "default",
+    "web_search": "cached",
+    "mcp_health": "redacted-health-only",
+    "output_schema_required": false,
+    "channel": "spawn",
+    "kitty_context": {
+      "record_type": "kitty_context_resolution",
+      "source": "mesh-root-config",
+      "mesh_root": "/home/galeavenworth/lab",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
+      "kitty_listen_on": "unix:@mesh-lab",
+      "config_path": "/home/galeavenworth/.config/codex-mesh/contexts.json"
+    }
+  },
+  "model_policy": {
+    "recommended_model": "gpt-5.5",
+    "selected_model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "official_doc": {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/cli/features",
+      "section": "model-guidance",
+      "manual_line_range": "5578-5588",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    }
+  },
+  "render_policy": {
+    "mode": "goal-first",
+    "deterministic": true,
+    "side_effect_free": true,
+    "message_template": "/goal Work {{task}} using the validated context cookbook and return a RESULT_ENVELOPE.",
+    "include_sections": [
+      "role",
+      "goal",
+      "constraints",
+      "context",
+      "success_criteria",
+      "output_contract",
+      "stop_rules"
+    ],
+    "preserve_transport_semantics": true,
+    "source_snapshots_required": true,
+    "require_upfront_plan": false
+  },
+  "close_policy": "green-predicate-and-result-envelope",
+  "verifier": {
+    "script": "./scripts/verify.sh",
+    "cue_vet_targets": [
+      "#ContextCookbook",
+      "#CookbookRoleBundle",
+      "#PromptRenderPolicy",
+      "#CodexLaunchPolicy"
+    ],
+    "valid_fixtures": [
+      {
+        "name": "valid-context-cookbook-implementation.json",
+        "expectation": "valid",
+        "cue_target": "#ContextCookbook",
+        "reason": "implementation role cookbook vets"
+      },
+      {
+        "name": "valid-context-cookbook-review-exec.json",
+        "expectation": "valid",
+        "cue_target": "#ContextCookbook",
+        "reason": "review and exec launch policies vet"
+      },
+      {
+        "name": "valid-cookbook-role-bundle-probe.json",
+        "expectation": "valid",
+        "cue_target": "#CookbookRoleBundle",
+        "reason": "probe role maps to verdict"
+      },
+      {
+        "name": "valid-prompt-render-policy-goal-first.json",
+        "expectation": "valid",
+        "cue_target": "#PromptRenderPolicy",
+        "reason": "prompt rendering stays goal-first"
+      }
+    ],
+    "adversarial_fixtures": [
+      {
+        "name": "invalid-context-cookbook-missing-catalog-citation.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-missing-official-doc-citation.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-prose-only-output.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-cookbook-role-bundle-unknown-role.json",
+        "expectation": "invalid",
+        "cue_target": "#CookbookRoleBundle",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-cookbook-role-bundle-payload-mismatch.json",
+        "expectation": "invalid",
+        "cue_target": "#CookbookRoleBundle",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-cookbook-role-bundle-success-criteria-prose.json",
+        "expectation": "invalid",
+        "cue_target": "#CookbookRoleBundle",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-cookbook-role-bundle-missing-stop-rules.json",
+        "expectation": "invalid",
+        "cue_target": "#CookbookRoleBundle",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-provider-secret.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-raw-mcp-inventory.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-plugin-required-public-core.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-native-subagent-lifecycle.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-codex-launch-policy-yolo-default.json",
+        "expectation": "invalid",
+        "cue_target": "#CodexLaunchPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-codex-launch-policy-full-access-no-worktree-reason.json",
+        "expectation": "invalid",
+        "cue_target": "#CodexLaunchPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-codex-launch-policy-review-closes-beads.json",
+        "expectation": "invalid",
+        "cue_target": "#CodexLaunchPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-codex-launch-policy-exec-no-schema.json",
+        "expectation": "invalid",
+        "cue_target": "#CodexLaunchPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-prompt-render-policy-non-goal-template.json",
+        "expectation": "invalid",
+        "cue_target": "#PromptRenderPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-prompt-render-policy-hidden-dispatch.json",
+        "expectation": "invalid",
+        "cue_target": "#PromptRenderPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-prompt-render-policy-nondeterministic.json",
+        "expectation": "invalid",
+        "cue_target": "#PromptRenderPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-prompt-render-policy-send-text-proof.json",
+        "expectation": "invalid",
+        "cue_target": "#PromptRenderPolicy",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-socket-scan.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-kitty-lifecycle-state.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      },
+      {
+        "name": "invalid-context-cookbook-bd-jsonl-runtime-truth.json",
+        "expectation": "invalid",
+        "cue_target": "#ContextCookbook",
+        "reason": "adversarial fixture must fail closed"
+      }
+    ],
+    "drift_gate": "./scripts/verify.sh"
+  },
+  "renderer_plan": {
+    "adapter": "context-cookbook-renderer",
+    "reads_validated_cue": true,
+    "source_reads_only_before_dispatch": true,
+    "emits_prompt_string": true,
+    "writes_result_envelope": true,
+    "allowed_invocations": [
+      "mesh wave dispatch",
+      "mesh workflow plan",
+      "mesh workflow run",
+      "spawn",
+      "tell",
+      "jump",
+      "codex exec",
+      "codex review"
+    ],
+    "forbidden": [
+      "hidden worker dispatch",
+      "new scheduler",
+      "new durable state store",
+      "raw mcp cache",
+      "provider/auth management"
+    ]
+  },
+  "collapse_targets": [
+    {
+      "legacy_path": "ad hoc prose role prompts",
+      "replacement": "#CookbookRoleBundle",
+      "reason": "Role anatomy is typed data."
+    },
+    {
+      "legacy_path": "wave message_template assembly",
+      "replacement": "#PromptRenderPolicy",
+      "reason": "Rendered prompts stay goal-first."
+    }
+  ]
+}

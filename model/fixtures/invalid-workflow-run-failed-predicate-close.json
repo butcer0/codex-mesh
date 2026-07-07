@@ -10,7 +10,7 @@
     "repo_id": "codex-mesh",
     "task_id": "mesh-dj8.1",
     "role": "judge",
-    "cwd": "/workspace/codex-mesh",
+    "cwd": "/home/galeavenworth/lab/codex-mesh",
     "placement_key": "codex-mesh/mesh-dj8.1/judge/attempt-1",
     "execution_mode": "read_only",
     "isolation_mode": "shared_checkout",

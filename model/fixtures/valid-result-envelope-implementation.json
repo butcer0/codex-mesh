@@ -19,7 +19,7 @@
     "kind": "implementation",
     "summary": "Added result envelope contract and fixtures.",
     "changed_files": [
-      "/workspace/codex-mesh/model/contract.cue"
+      "/home/galeavenworth/lab/codex-mesh/model/contract.cue"
     ],
     "verification": [
       {

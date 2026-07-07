@@ -1,17 +1,17 @@
 {
   "record_type": "mesh_init",
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "prefix": "lab",
   "dry_run": true,
   "remote_url": "http://example.invalid:50051/example/lab",
   "remote_source": "operator-config",
   "commands": [
     {
-      "argv": ["mkdir", "-p", "/workspace"],
+      "argv": ["mkdir", "-p", "/home/galeavenworth/lab"],
       "status": "planned"
     },
     {
-      "argv": ["git", "init", "/workspace"],
+      "argv": ["git", "init", "/home/galeavenworth/lab"],
       "status": "planned"
     },
     {
@@ -27,7 +27,7 @@
         "--remote",
         "http://example.invalid:50051/example/lab"
       ],
-      "cwd": "/workspace",
+      "cwd": "/home/galeavenworth/lab",
       "status": "planned"
     }
   ]

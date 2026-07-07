@@ -1,0 +1,27 @@
+{
+  "mode": "review",
+  "sandbox": {
+    "sandbox_mode": "workspace-write",
+    "approval_policy": "on-request",
+    "full_access_bypass": false
+  },
+  "model_policy": {
+    "recommended_model": "gpt-5.5",
+    "selected_model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "official_doc": {
+      "source": "OpenAI Codex manual",
+      "url": "https://developers.openai.com/codex/cli/features",
+      "section": "model-guidance",
+      "manual_line_range": "5578-5588",
+      "fetched_by": "openai-docs/fetch-codex-manual.mjs"
+    }
+  },
+  "profile": "default",
+  "web_search": "cached",
+  "mcp_health": "redacted-health-only",
+  "output_schema_required": true,
+  "channel": "none",
+  "expected_result_payload": "review_findings",
+  "closes_beads_directly": true
+}

@@ -1,0 +1,79 @@
+{
+  "record_type": "workspace_validation",
+  "status": "valid",
+  "workspace_scan_depth": 1,
+  "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
+  "workspaces": [
+    {
+      "record_type": "workspace",
+      "name": "codex-mesh",
+      "root": "/home/galeavenworth/lab/codex-mesh",
+      "workspace_role": "project",
+      "kind": "software-project",
+      "workflow_class": "implementation",
+      "child": true,
+      "default_formulas": [
+        "cue-first-feature"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "codex-mesh",
+        "kind": "software-project",
+        "workflow_class": "implementation",
+        "child": true
+      },
+      "discovered": {
+        "name": "codex-mesh",
+        "root": "/home/galeavenworth/lab/codex-mesh",
+        "workspace_role": "project",
+        "beads_status": "available",
+        "task_count": 1
+      },
+      "beads": {
+        "record_type": "workspace_beads_evidence",
+        "status": "available",
+        "source": "bd-config-context",
+        "commands": [
+          "bd context --json"
+        ],
+        "prefix": "mesh"
+      }
+    },
+    {
+      "record_type": "workspace",
+      "name": "private-origin",
+      "root": "/home/galeavenworth/lab/private-origin",
+      "workspace_role": "project",
+      "kind": "software-project",
+      "workflow_class": "implementation",
+      "child": true,
+      "default_formulas": [
+        "cue-first-feature"
+      ],
+      "declaration": {
+        "record_type": "workspace_declaration",
+        "name": "private-origin",
+        "kind": "software-project",
+        "workflow_class": "implementation",
+        "child": true
+      },
+      "discovered": {
+        "name": "private-origin",
+        "root": "/home/galeavenworth/lab/private-origin",
+        "workspace_role": "project",
+        "beads_status": "available",
+        "task_count": 1
+      },
+      "beads": {
+        "record_type": "workspace_beads_evidence",
+        "status": "available",
+        "source": "bd-config-context",
+        "commands": [
+          "bd context --json"
+        ],
+        "prefix": "mesh"
+      }
+    }
+  ],
+  "errors": []
+}

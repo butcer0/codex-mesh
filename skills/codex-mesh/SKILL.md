@@ -48,12 +48,17 @@ Pick the formula by task shape:
 
 Red flags — these thoughts mean stop and pour a formula:
 
-| Rationalization | Reality |
-| --- | --- |
-| "Too simple to orchestrate" | If it is mutating or multi-step, it is substantive. A wave of one is still verified. |
-| "Dispatch overhead is too high" | The concurrency cap bounds cost; skipped work is reported in `#WaveStatus`, never silent. |
-| "I'll verify at the end" | Red-check comes before work; close requires green plus an envelope. |
-| "It looks complete" | `completeness-critic` is the definition of complete, not a feeling. |
+| Rationalization | Reality | mesh-mpl live probe count |
+| --- | --- | --- |
+| "Too simple to orchestrate" | If it is mutating or multi-step, it is substantive. A wave of one is still verified. | 0 |
+| "Dispatch overhead is too high" | The concurrency cap bounds cost; skipped work is reported in `#WaveStatus`, never silent. | 0 |
+| "I'll verify at the end" | Red-check comes before work; close requires green plus an envelope. | 0 |
+| "It looks complete" | `completeness-critic` is the definition of complete, not a feeling. | 0 |
+
+mesh-mpl live probe (2026-07-06): 0 solo-work rationalizations observed in
+`/home/galeavenworth/.local/state/codex-mesh/transcripts/13.ansi`. The fresh
+probe chose the formula path, dry-ran `bd mol wisp create cue-first-feature`,
+and named the requested launch-policy feature as CUE-first molecule work.
 
 ## Roles
 

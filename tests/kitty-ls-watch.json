@@ -8,7 +8,7 @@
           {
             "id": 7,
             "title": "codex-watch-active",
-            "cwd": "/workspace/codex-mesh",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
             "pid": 12345,
             "cmdline": [
               "codex",
@@ -23,7 +23,7 @@
           {
             "id": 8,
             "title": "codex-watch-quiet",
-            "cwd": "/workspace/codex-mesh",
+            "cwd": "/home/galeavenworth/lab/codex-mesh",
             "pid": 12346,
             "cmdline": [
               "codex",
@@ -38,7 +38,7 @@
           {
             "id": 9,
             "title": "codex-watch-orphan",
-            "cwd": "/workspace/lab-notes",
+            "cwd": "/home/galeavenworth/lab/lab-notes",
             "pid": 12347,
             "cmdline": [
               "codex",

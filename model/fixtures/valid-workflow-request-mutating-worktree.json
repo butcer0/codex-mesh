@@ -3,7 +3,7 @@
   "formula": "judge-panel",
   "parent_task": "mesh-dj8",
   "repo_id": "codex-mesh",
-  "workdir": "/workspace/codex-mesh",
+  "workdir": "/home/galeavenworth/lab/codex-mesh",
   "role": "implementation",
   "address_prefix": "wf-impl",
   "max_steps": 1,
@@ -11,5 +11,5 @@
   "live_mutation": false,
   "default_execution_mode": "mutating",
   "default_isolation_mode": "worktree",
-  "worktree_base": "/workspace/.worktrees"
+  "worktree_base": "/home/galeavenworth/lab/.worktrees"
 }

@@ -1,0 +1,9 @@
+{
+  "record_type": "federation_role",
+  "name": "coordinator",
+  "scope": "mesh-root",
+  "delegates_to_project_manager": true,
+  "direct_child_workspace_access": false,
+  "owns_cross_workspace_rollout": true,
+  "cross_workspace_lifecycle_owner": true
+}

@@ -4,7 +4,7 @@
   "session_id": "7",
   "address": "codex-implementation-1",
   "role": "implementation",
-  "cwd": "/workspace/codex-mesh",
+  "cwd": "/home/galeavenworth/lab/codex-mesh",
   "transcript_path": "/home/galeavenworth/.local/state/codex-mesh/transcripts/7.ansi",
   "category": "session-started",
   "occurred_at_unix": 1783278000,

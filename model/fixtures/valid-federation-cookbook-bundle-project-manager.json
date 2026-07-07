@@ -1,0 +1,9 @@
+{
+  "record_type": "federation_cookbook_bundle",
+  "role": "project-manager",
+  "context_cookbook_id": "federation-project-manager",
+  "context_cookbook_path": "/home/galeavenworth/lab/codex-mesh/skills/codex-mesh/SKILL.md",
+  "handoff_surface": "skill",
+  "goal_predicate_path": "/tmp/codex-mesh-campaign/predicates/mesh-mol-g27.json",
+  "instruction_hydration": "fresh-agent-cwd-and-cookbook"
+}

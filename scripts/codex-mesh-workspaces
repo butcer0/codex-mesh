@@ -4,10 +4,29 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 
 BEADS_COMMAND = "bd list --status=open,in_progress,hooked --json"
 BEADS_WORKSPACE_COMMAND = "bd -C <workspace> list --status=open,in_progress,hooked --json"
+WORKSPACE_BEADS_COMMANDS = [
+    "bd context --json",
+    "bd where --json",
+    "bd config show --json",
+    "bd config get issue_prefix",
+]
+FULL_DEFAULT_FORMULAS = [
+    "cue-first-feature",
+    "review-wave",
+    "judge-panel",
+    "loop-until-dry",
+    "completeness-critic",
+]
+REFERENCE_DEFAULT_FORMULAS = [
+    "review-wave",
+    "judge-panel",
+    "completeness-critic",
+]
 
 
 def abs_path(path):
@@ -42,6 +61,203 @@ def run_bd_list(root):
     if not isinstance(tasks, list):
         return None, "bd list returned non-list JSON"
     return tasks, None
+
+
+def run_json(argv):
+    proc = subprocess.run(
+        argv,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if proc.returncode != 0:
+        message = (proc.stderr or proc.stdout or "command failed").strip().splitlines()
+        return None, message[0] if message else "command failed"
+    try:
+        return json.loads(proc.stdout or "null"), None
+    except json.JSONDecodeError as exc:
+        return None, f"invalid JSON: {exc}"
+
+
+def run_text(argv):
+    proc = subprocess.run(
+        argv,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if proc.returncode != 0:
+        message = (proc.stderr or proc.stdout or "command failed").strip().splitlines()
+        return None, message[0] if message else "command failed"
+    return proc.stdout.strip(), None
+
+
+def script_root():
+    return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+
+def default_formulas(kind):
+    if kind in ("mesh", "software-project"):
+        return list(FULL_DEFAULT_FORMULAS)
+    if kind == "notes":
+        return list(REFERENCE_DEFAULT_FORMULAS)
+    return []
+
+
+def validation_error(code, message, workspace=None, root=None, command=None):
+    out = {
+        "code": code,
+        "message": message,
+    }
+    if workspace:
+        out["workspace"] = workspace
+    if root:
+        out["root"] = root
+    if command:
+        out["command"] = command
+    return out
+
+
+def export_workspace_declaration(root):
+    path = os.path.join(root, "workspace.cue")
+    if not os.path.exists(path):
+        return None, validation_error(
+            "missing-workspace-cue",
+            "workspace.cue is required for live workspace validation",
+            workspace=workspace_name(root),
+            root=root,
+        )
+
+    proc = subprocess.run(
+        ["cue", "export", path, "-e", "workspace"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if proc.returncode != 0:
+        message = (proc.stderr or proc.stdout or "cue export failed").strip().splitlines()
+        return None, validation_error(
+            "invalid-workspace-cue",
+            message[0] if message else "workspace.cue did not export workspace",
+            workspace=workspace_name(root),
+            root=root,
+        )
+
+    try:
+        declaration = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        return None, validation_error(
+            "invalid-workspace-cue",
+            f"workspace.cue exported invalid JSON: {exc}",
+            workspace=workspace_name(root),
+            root=root,
+        )
+
+    if not isinstance(declaration, dict):
+        return None, validation_error(
+            "invalid-workspace-cue",
+            "workspace.cue workspace expression must export an object",
+            workspace=workspace_name(root),
+            root=root,
+        )
+
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
+        json.dump(declaration, handle)
+        handle.write("\n")
+        tmp_path = handle.name
+    try:
+        vet = subprocess.run(
+            [
+                "cue",
+                "vet",
+                tmp_path,
+                os.path.join(script_root(), "model", "contract.cue"),
+                "-d",
+                "#WorkspaceDeclaration",
+            ],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+    if vet.returncode != 0:
+        message = (vet.stderr or vet.stdout or "cue vet failed").strip().splitlines()
+        return None, validation_error(
+            "invalid-workspace-cue",
+            message[0] if message else "workspace.cue failed #WorkspaceDeclaration",
+            workspace=declaration.get("name") or workspace_name(root),
+            root=root,
+        )
+    return declaration, None
+
+
+def beads_evidence(root, workspace):
+    context, context_error = run_json(["bd", "-C", root, "context", "--json"])
+    where, where_error = run_json(["bd", "-C", root, "where", "--json"])
+    config, config_error = run_json(["bd", "-C", root, "config", "show", "--json"])
+    prefix, prefix_error = run_text(["bd", "-C", root, "config", "get", "issue_prefix"])
+
+    if prefix_error:
+        return None, validation_error(
+            "beads-prefix-unreadable",
+            prefix_error,
+            workspace=workspace["name"],
+            root=root,
+            command="bd config get issue_prefix",
+        )
+    if not prefix:
+        return None, validation_error(
+            "beads-prefix-unreadable",
+            "bd config get issue_prefix returned an empty prefix",
+            workspace=workspace["name"],
+            root=root,
+            command="bd config get issue_prefix",
+        )
+
+    evidence = {
+        "record_type": "workspace_beads_evidence",
+        "status": "available",
+        "source": "bd-config-context",
+        "commands": list(WORKSPACE_BEADS_COMMANDS),
+        "prefix": prefix,
+    }
+    if isinstance(context, dict):
+        for field in ("database", "project_id", "repo_root", "beads_dir", "role"):
+            if context.get(field):
+                evidence[field] = context[field]
+    if isinstance(where, dict):
+        if where.get("path") and not evidence.get("beads_dir"):
+            evidence["beads_dir"] = where["path"]
+        if where.get("prefix"):
+            evidence["prefix"] = where["prefix"]
+    if isinstance(config, list):
+        for item in config:
+            if item.get("key") == "sync.remote" and item.get("value"):
+                evidence["sync_remote"] = item["value"]
+                break
+
+    for command, error in (
+        ("bd context --json", context_error),
+        ("bd where --json", where_error),
+        ("bd config show --json", config_error),
+    ):
+        if error:
+            return None, validation_error(
+                "beads-prefix-unreadable",
+                error,
+                workspace=workspace["name"],
+                root=root,
+                command=command,
+            )
+    return evidence, None
 
 
 def normalize_task(task, workspace):
@@ -146,15 +362,123 @@ def discover(mesh_root):
     return payload
 
 
+def validate(mesh_root):
+    payload = discover(mesh_root)
+    workspaces = []
+    errors = []
+    prefixes = {}
+
+    for discovered in payload["workspaces"]:
+        root = discovered["root"]
+        declaration, error = export_workspace_declaration(root)
+        if error:
+            errors.append(error)
+            continue
+
+        name = declaration["name"]
+        kind = declaration["kind"]
+        workflow_class = declaration["workflow_class"]
+        child = declaration["child"]
+        workspace_role = discovered["workspace_role"]
+
+        if name != discovered["name"]:
+            errors.append(
+                validation_error(
+                    "declared-role-mismatch",
+                    f"declared name {name} does not match discovered workspace {discovered['name']}",
+                    workspace=name,
+                    root=root,
+                )
+            )
+        if (kind == "mesh") != (workspace_role == "mesh-root"):
+            errors.append(
+                validation_error(
+                    "mesh-root-child-mismatch",
+                    "workspace kind and discovered mesh-root/project role disagree",
+                    workspace=name,
+                    root=root,
+                )
+            )
+        if child != (workspace_role == "project"):
+            errors.append(
+                validation_error(
+                    "declared-role-mismatch",
+                    "workspace child flag does not match discovered root role",
+                    workspace=name,
+                    root=root,
+                )
+            )
+        if kind == "software-project" and discovered["beads_status"] != "available":
+            errors.append(
+                validation_error(
+                    "beads-required-for-kind",
+                    "software-project workspaces must have Beads available",
+                    workspace=name,
+                    root=root,
+                )
+            )
+
+        workspace = {
+            "record_type": "workspace",
+            "name": name,
+            "root": root,
+            "workspace_role": workspace_role,
+            "kind": kind,
+            "workflow_class": workflow_class,
+            "child": child,
+            "default_formulas": declaration.get("default_formulas") or default_formulas(kind),
+            "declaration": declaration,
+            "discovered": discovered,
+        }
+
+        if discovered["beads_status"] == "available":
+            evidence, evidence_error = beads_evidence(root, workspace)
+            if evidence_error:
+                errors.append(evidence_error)
+            else:
+                workspace["beads"] = evidence
+                prefix = evidence["prefix"]
+                if prefix in prefixes:
+                    errors.append(
+                        validation_error(
+                            "duplicate-bd-prefix",
+                            f"bd prefix {prefix} is used by both {prefixes[prefix]} and {name}",
+                            workspace=name,
+                            root=root,
+                            command="bd config get issue_prefix",
+                        )
+                    )
+                else:
+                    prefixes[prefix] = name
+
+        workspaces.append(workspace)
+
+    validation = {
+        "record_type": "workspace_validation",
+        "status": "invalid" if errors else "valid",
+        "workspace_scan_depth": payload["workspace_scan_depth"],
+        "beads_command": BEADS_WORKSPACE_COMMAND,
+        "workspaces": workspaces,
+        "errors": errors,
+    }
+    if payload.get("mesh_root"):
+        validation["mesh_root"] = payload["mesh_root"]
+    return validation
+
+
 def main():
     parser = argparse.ArgumentParser(description="Discover codex-mesh watch workspaces")
     parser.add_argument("--mesh-root", help="parent directory whose direct children are mesh workspaces")
+    parser.add_argument("--validate", action="store_true", help="emit #WorkspaceValidation JSON from live workspace.cue declarations")
     args = parser.parse_args()
 
     if os.environ.get("CODEX_MESH_WORKSPACES_FILE"):
         payload = load_fixture(os.environ["CODEX_MESH_WORKSPACES_FILE"])
     elif os.environ.get("CODEX_MESH_BD_LIST_FILE"):
         payload = from_bd_list_fixture(os.environ["CODEX_MESH_BD_LIST_FILE"])
+    elif args.validate:
+        mesh_root = args.mesh_root or os.environ.get("CODEX_MESH_ROOT")
+        payload = validate(mesh_root)
     else:
         mesh_root = args.mesh_root or os.environ.get("CODEX_MESH_ROOT")
         payload = discover(mesh_root)

@@ -1,0 +1,60 @@
+{
+  "record_type": "goal_predicate",
+  "task": "mesh-mol-parent",
+  "description": "The composed formula has closed all required children and the parent integration predicate is green.",
+  "frozen": true,
+  "red_check_required": true,
+  "close_requires_green": true,
+  "check": {
+    "kind": "command",
+    "cwd": "/home/galeavenworth/lab/codex-mesh",
+    "command": ["mesh", "goal", "check", "--phase", "close", "/tmp/codex-mesh-campaign/predicates/mesh-mol-parent.json"],
+    "expected_exit_code": 0,
+    "side_effect_free": true,
+    "timeout_seconds": 120
+  },
+  "adversarial": [
+    {
+      "label": "child-green-only",
+      "reason": "Child result envelopes alone do not prove the parent integration outcome.",
+      "expected_status": "red"
+    }
+  ],
+  "integration_scope": "formula",
+  "composition_source": "bd-formula",
+  "proof_obligations": [
+    "parent-predicate-distinct",
+    "formula-step-ordering",
+    "all-required-child-closes-green",
+    "structured-envelope-evidence"
+  ],
+  "evidence_commands": [
+    {
+      "purpose": "formula-visibility",
+      "primitive": "bd formula list",
+      "command": "bd formula list",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "text",
+      "exit_code": 0
+    },
+    {
+      "purpose": "molecule-structure",
+      "primitive": "bd mol wisp create <formula> --dry-run",
+      "command": "bd mol wisp create cue-first-feature --dry-run",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    },
+    {
+      "purpose": "parent-integration-evaluation",
+      "primitive": "mesh goal check --phase close <predicate>",
+      "command": "mesh goal check --phase close /tmp/codex-mesh-campaign/predicates/mesh-mol-parent.json",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    }
+  ]
+}

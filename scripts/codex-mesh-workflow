@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import hashlib
+import importlib.machinery
+import importlib.util
 import json
 import os
 import re
@@ -54,6 +56,79 @@ def reject_forbidden(payload, path):
             reject_forbidden(value, f"{path}[{index}]")
 
 
+def script_dir():
+    return os.path.dirname(os.path.realpath(__file__))
+
+
+def load_wave_module():
+    path = os.path.join(script_dir(), "codex-mesh-wave")
+    loader = importlib.machinery.SourceFileLoader("codex_mesh_wave", path)
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+def validate_live_authorization(auth):
+    if not isinstance(auth, dict):
+        die("request.live_authorization is required for live mutation")
+    if auth.get("record_type") != "workflow_live_authorization":
+        die("request.live_authorization.record_type must be workflow_live_authorization")
+    if auth.get("source", "operator_gate") != "operator_gate":
+        die("request.live_authorization.source must be operator_gate")
+    validate_string(auth.get("gate_id"), BEADS_ISSUE_RE, "request.live_authorization.gate_id")
+    if auth.get("gate_status") != "closed":
+        die("request.live_authorization.gate_status must be closed")
+    if auth.get("scope") != "lab-coordinator-delegated":
+        die("request.live_authorization.scope must be lab-coordinator-delegated")
+    if auth.get("project_gates_respected") is not True:
+        die("request.live_authorization.project_gates_respected must be true")
+    if auth.get("worktree_isolation_required") is not True:
+        die("request.live_authorization.worktree_isolation_required must be true")
+    if auth.get("public_deployment_hold") is not True:
+        die("request.live_authorization.public_deployment_hold must be true")
+    max_running = auth.get("max_running_agents")
+    if not isinstance(max_running, int) or max_running <= 0 or max_running > 10:
+        die("request.live_authorization.max_running_agents must be between 1 and 10")
+    kill_switches = auth.get("kill_switches")
+    if not isinstance(kill_switches, list) or "lights_off" not in kill_switches or "broadcast_halt" not in kill_switches:
+        die("request.live_authorization.kill_switches must include lights_off and broadcast_halt")
+    return auth
+
+
+def validate_live_policy(policy, auth):
+    if not isinstance(policy, dict):
+        die("request.live_dispatch_policy is required for live mutation")
+    if policy.get("record_type") != "workflow_live_dispatch_policy":
+        die("request.live_dispatch_policy.record_type must be workflow_live_dispatch_policy")
+    if policy.get("authorization") != auth:
+        die("request.live_dispatch_policy.authorization must match request.live_authorization")
+    if policy.get("dry_run_default") is not True:
+        die("request.live_dispatch_policy.dry_run_default must be true")
+    if policy.get("live_requires_explicit_request") is not True:
+        die("request.live_dispatch_policy.live_requires_explicit_request must be true")
+    cap = policy.get("concurrency_cap")
+    if not isinstance(cap, int) or cap <= 0 or cap > auth["max_running_agents"]:
+        die("request.live_dispatch_policy.concurrency_cap exceeds authorization")
+    if policy.get("frontier_command") not in (
+        "bd ready --parent <epic> --exclude-type epic --json",
+        "bd ready --gated --json",
+        "bd mol ready --json",
+    ):
+        die("request.live_dispatch_policy.frontier_command is not an installed live-dispatch frontier")
+    if policy.get("spawn_adapter_reuse") is not True:
+        die("request.live_dispatch_policy.spawn_adapter_reuse must be true")
+    if policy.get("spawn_adapter") != "scripts/codex-mesh-wave spawn_task":
+        die("request.live_dispatch_policy.spawn_adapter must reuse scripts/codex-mesh-wave spawn_task")
+    if policy.get("spawn_command") != "scripts/spawn":
+        die("request.live_dispatch_policy.spawn_command must be scripts/spawn")
+    if policy.get("join_key") != "codex_task":
+        die("request.live_dispatch_policy.join_key must be codex_task")
+    if policy.get("durable_state") != "beads-comments-and-transcripts":
+        die("request.live_dispatch_policy.durable_state must be beads-comments-and-transcripts")
+    return policy
+
+
 def validate_request(payload):
     if not isinstance(payload, dict):
         die("request must be a JSON object")
@@ -76,10 +151,13 @@ def validate_request(payload):
     request["role"] = request.get("role", "implementation")
     request["dry_run"] = bool(request.get("dry_run", True))
     request["live_mutation"] = bool(request.get("live_mutation", False))
-    if request["dry_run"] is not True:
-        die("workflow runner currently requires request.dry_run=true")
-    if request["live_mutation"] is not False:
-        die("workflow runner currently requires request.live_mutation=false")
+    if request["live_mutation"]:
+        if payload.get("dry_run") is not False:
+            die("live mutation workflow requests require request.dry_run=false")
+        auth = validate_live_authorization(request.get("live_authorization"))
+        validate_live_policy(request.get("live_dispatch_policy"), auth)
+    elif request["dry_run"] is not True:
+        die("workflow runner requires request.dry_run=true unless live_mutation=true")
 
     execution = request.get("default_execution_mode", "read_only")
     isolation = request.get("default_isolation_mode", "shared_checkout")
@@ -93,6 +171,11 @@ def validate_request(payload):
         die("merge workflow requests require main_owned isolation")
     if isolation == "worktree":
         validate_abs_path(request.get("worktree_base"), "request.worktree_base")
+    if request["live_mutation"]:
+        if execution != "mutating":
+            die("live mutation workflow requests require mutating execution")
+        if isolation != "worktree":
+            die("live mutation workflow requests require worktree isolation")
     request["default_execution_mode"] = execution
     request["default_isolation_mode"] = isolation
 
@@ -340,8 +423,94 @@ def run_status(command, states):
     return "blocked"
 
 
+def message_for_live_decision(decision):
+    task_id = decision["placement"]["task_id"]
+    return f"/goal complete {task_id} via mesh workflow run live dispatch"
+
+
+def live_dispatch_result(run, request):
+    wave = load_wave_module()
+    policy = request["live_dispatch_policy"]
+    cap = policy["concurrency_cap"]
+    titles = {
+        state["placement"]["task_id"]: state["title"]
+        for state in run["formula_run"]["steps"]
+    }
+    attempts = []
+    dispatch_seen = 0
+
+    for decision in run["decisions"]:
+        if decision["action"] != "dispatch":
+            continue
+        placement = decision["placement"]
+        task_id = placement["task_id"]
+        address = wave.address_for(request["address_prefix"], task_id)
+        message = message_for_live_decision(decision)
+        if dispatch_seen >= cap:
+            dispatch = {
+                "record_type": "dispatch_record",
+                "task": task_id,
+                "address": address,
+                "role": placement["role"],
+                "status": "skipped",
+                "reason": "cap-reached",
+                "message": message,
+            }
+        else:
+            wave_request = {
+                "role": placement["role"],
+                "isolation": {
+                    "mode": "worktree",
+                    "worktree_base": request["worktree_base"],
+                },
+                "workdir": request["workdir"],
+            }
+            dispatch = wave.spawn_task(
+                wave_request,
+                {
+                    "id": task_id,
+                    "title": titles.get(task_id, task_id),
+                },
+                address,
+                message,
+            )
+        attempts.append({
+            "record_type": "workflow_live_dispatch_attempt",
+            "run_id": run["run_id"],
+            "bounded_index": dispatch_seen,
+            "decision": decision,
+            "dispatch": dispatch,
+            "spawn_adapter_reuse": True,
+            "spawn_adapter": "scripts/codex-mesh-wave spawn_task",
+            "spawn_command": "scripts/spawn",
+            "join_key": "codex_task",
+        })
+        dispatch_seen += 1
+
+    return {
+        "record_type": "workflow_live_dispatch_result",
+        "run_id": run["run_id"],
+        "policy": policy,
+        "run": {
+            "record_type": "workflow_run",
+            "command": "mesh workflow",
+            "mode": "run",
+            "run_id": run["run_id"],
+            "dry_run": False,
+            "live_mutation": True,
+            "request": request,
+        },
+        "attempts": attempts,
+        "spawned_count": sum(1 for attempt in attempts if attempt["dispatch"]["status"] == "spawned"),
+        "skipped_count": sum(1 for attempt in attempts if attempt["dispatch"]["status"] == "skipped"),
+        "frontier_remaining": max(0, dispatch_seen - cap),
+    }
+
+
 def build_run(args):
     request = validate_request(load_json(args.request_json, "request"))
+    if request["live_mutation"] and args.command != "run":
+        die("live mutation workflow requests are only valid for mesh workflow run")
     formula = validate_formula(load_json(formula_path(request, args), "formula"), request)
     envelopes = envelope_by_task(request)
     closed_steps = set()
@@ -357,8 +526,8 @@ def build_run(args):
         "run_id": args.run_id or f"{request['formula']}-{request['parent_task']}-{mode}",
         "status": status,
         "bounded": True,
-        "dry_run": True,
-        "live_mutation": False,
+        "dry_run": request["dry_run"],
+        "live_mutation": request["live_mutation"],
         "request": request,
         "max_steps": request["max_steps"],
         "formula_run": {
@@ -374,6 +543,8 @@ def build_run(args):
     }
     if request["result_envelopes"]:
         run["formula_run"]["result_envelopes"] = request["result_envelopes"]
+    if request["live_mutation"]:
+        run["live_dispatch_result"] = live_dispatch_result(run, request)
     json.dump(run, sys.stdout, indent=2, sort_keys=True)
     print()
 

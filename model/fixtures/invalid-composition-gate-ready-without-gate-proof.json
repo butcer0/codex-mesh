@@ -1,0 +1,67 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-gate-parent",
+  "composition_source": "bd-gate-resume",
+  "close_policy": "children-green-integration-green-and-result-envelope",
+  "integration_predicate": {
+    "record_type": "goal_predicate",
+    "task": "mesh-mol-gate-parent",
+    "description": "Invalid because ordinary ready output is used as gated-ready proof.",
+    "frozen": true,
+    "red_check_required": true,
+    "close_requires_green": true,
+    "check": {
+      "kind": "command",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
+      "command": ["true"],
+      "expected_exit_code": 0,
+      "side_effect_free": true
+    },
+    "adversarial": [
+      {
+        "label": "ordinary-ready",
+        "reason": "Gate-required composition must use gated-ready evidence.",
+        "expected_status": "red"
+      }
+    ],
+    "integration_scope": "gate-resume",
+    "composition_source": "bd-gate-resume",
+    "proof_obligations": ["parent-predicate-distinct", "gate-satisfaction"],
+    "evidence_commands": [
+      {
+        "purpose": "gate-satisfaction",
+        "primitive": "bd ready --parent <epic> --exclude-type epic --json",
+        "command": "bd ready --parent mesh-mol-gate-parent --exclude-type epic --json",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "json",
+        "exit_code": 0
+      }
+    ]
+  },
+  "child_tasks": ["mesh-mol-gate-child"],
+  "child_predicates": [],
+  "required_child_closes": [],
+  "evidence_commands": [],
+  "gate_resume": {
+    "gate_required": true,
+    "gate_check": {
+      "purpose": "gate-satisfaction",
+      "primitive": "bd gate check --dry-run",
+      "command": "bd gate check --dry-run",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "exit-code",
+      "exit_code": 0
+    },
+    "ready_evidence": {
+      "purpose": "gate-satisfaction",
+      "primitive": "bd ready --parent <epic> --exclude-type epic --json",
+      "command": "bd ready --parent mesh-mol-gate-parent --exclude-type epic --json",
+      "side_effect_free": true,
+      "required": true,
+      "output_format": "json",
+      "exit_code": 0
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "record_type": "federation_role",
+  "name": "project-manager",
+  "scope": "project-workspace",
+  "owns_one_project_workspace": true,
+  "owns_project_frontier": true,
+  "owns_worker_result_harvest": true,
+  "direct_child_workspace_access": false
+}

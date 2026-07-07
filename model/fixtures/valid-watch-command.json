@@ -5,12 +5,12 @@
   "include_detached": false,
   "interval_seconds": 2,
   "idle_threshold_seconds": 30,
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "kitty_context": {
     "record_type": "kitty_context_resolution",
     "source": "mesh-root-config",
-    "mesh_root": "/workspace",
-    "cwd": "/workspace/codex-mesh",
+    "mesh_root": "/home/galeavenworth/lab",
+    "cwd": "/home/galeavenworth/lab/codex-mesh",
     "kitty_listen_on": "unix:/tmp/codex-mesh-lab",
     "config_path": "/home/galeavenworth/.config/codex-mesh/contexts.json"
   },

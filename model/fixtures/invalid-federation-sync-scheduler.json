@@ -1,0 +1,51 @@
+{
+  "record_type": "federation_delegation",
+  "source_mesh_task": "lab-8gq",
+  "target_workspace": {
+    "record_type": "federation_workspace_ref",
+    "workspace_id": "codex-mesh",
+    "workspace_root": "/home/galeavenworth/lab/codex-mesh",
+    "workspace_role": "project",
+    "workflow_class": "implementation",
+    "beads_prefix": "mesh",
+    "beads_context_command": "bd -C WORKSPACE context --json",
+    "mesh_root": "/home/galeavenworth/lab",
+    "belongs_to_lab_federation": true,
+    "project_context_proven": true
+  },
+  "target_project_task": "mesh-mol-g27",
+  "coordinator": {
+    "record_type": "federation_role",
+    "name": "coordinator",
+    "scope": "mesh-root",
+    "delegates_to_project_manager": true,
+    "direct_child_workspace_access": false,
+    "owns_cross_workspace_rollout": true,
+    "cross_workspace_lifecycle_owner": true
+  },
+  "project_manager": {
+    "record_type": "federation_role",
+    "name": "project-manager",
+    "scope": "project-workspace",
+    "owns_one_project_workspace": true,
+    "owns_project_frontier": true,
+    "owns_worker_result_harvest": true,
+    "direct_child_workspace_access": false
+  },
+  "transport": "spawn",
+  "cookbook_bundle": {
+    "record_type": "federation_cookbook_bundle",
+    "role": "project-manager",
+    "context_cookbook_id": "federation-project-manager",
+    "context_cookbook_path": "/home/galeavenworth/lab/codex-mesh/skills/codex-mesh/SKILL.md",
+    "handoff_surface": "skill",
+    "instruction_hydration": "fresh-agent-cwd-and-cookbook"
+  },
+  "goal_predicate_path": "/tmp/codex-mesh-campaign/predicates/mesh-mol-g27.json",
+  "expected_result": "federation_result_envelope",
+  "beads_comment_anchor": "bd comments add lab-8gq --file pm-result-envelope.txt",
+  "transcript_required": true,
+  "coordinator_direct_child_workspace_access": false,
+  "federation_sync_scheduler": true,
+  "scheduler": "bd federation sync daemon"
+}

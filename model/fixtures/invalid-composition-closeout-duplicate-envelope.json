@@ -1,0 +1,45 @@
+{
+  "record_type": "composition_envelope_evidence",
+  "source": "bd-comments-json",
+  "task": "mesh-mol-envelope",
+  "exact_match_count": 2,
+  "envelope": {
+    "record_type": "result_envelope",
+    "task": "mesh-mol-envelope",
+    "session_id": "18",
+    "address": "composition-envelope",
+    "role": "implementation",
+    "status": "completed",
+    "completed_at_unix": 1783366500,
+    "evidence": [
+      {
+        "kind": "predicate",
+        "label": "close",
+        "command": "true",
+        "exit_code": 0
+      }
+    ],
+    "payload": {
+      "kind": "implementation",
+      "summary": "Invalid duplicate envelope evidence.",
+      "changed_files": [],
+      "verification": [
+        {
+          "kind": "predicate",
+          "label": "close",
+          "command": "true",
+          "exit_code": 0
+        }
+      ]
+    }
+  },
+  "evidence_command": {
+    "purpose": "child-result-envelope",
+    "primitive": "bd comments --json",
+    "command": "bd comments mesh-mol-envelope --json",
+    "side_effect_free": true,
+    "required": true,
+    "output_format": "json",
+    "exit_code": 0
+  }
+}

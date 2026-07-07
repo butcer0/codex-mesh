@@ -1,0 +1,24 @@
+{
+  "record_type": "workflow_live_dispatch_policy",
+  "authorization": {
+    "record_type": "workflow_live_authorization",
+    "source": "operator_gate",
+    "gate_id": "mesh-ajx",
+    "gate_status": "closed",
+    "scope": "lab-coordinator-delegated",
+    "project_gates_respected": true,
+    "worktree_isolation_required": true,
+    "public_deployment_hold": true,
+    "max_running_agents": 10,
+    "kill_switches": ["lights_off", "broadcast_halt"]
+  },
+  "dry_run_default": true,
+  "live_requires_explicit_request": true,
+  "concurrency_cap": 1,
+  "frontier_command": "bd mol ready --gated --json",
+  "spawn_adapter_reuse": true,
+  "spawn_adapter": "scripts/codex-mesh-wave spawn_task",
+  "spawn_command": "scripts/spawn",
+  "join_key": "codex_task",
+  "durable_state": "beads-comments-and-transcripts"
+}

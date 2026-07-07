@@ -1,0 +1,7 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-parent",
+  "composition_source": "bd-formula",
+  "scheduler": "mesh-local",
+  "durable_store": "mesh-local-db"
+}

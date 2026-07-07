@@ -1,25 +1,25 @@
 {
   "beads_command": "bd -C <workspace> list --status=open,in_progress,hooked --json",
-  "mesh_root": "/workspace",
+  "mesh_root": "/home/galeavenworth/lab",
   "workspace_scan_depth": 1,
   "workspaces": [
     {
       "name": "lab",
-      "root": "/workspace",
+      "root": "/home/galeavenworth/lab",
       "workspace_role": "mesh-root",
       "beads_status": "available",
       "task_count": 0
     },
     {
       "name": "codex-mesh",
-      "root": "/workspace/codex-mesh",
+      "root": "/home/galeavenworth/lab/codex-mesh",
       "workspace_role": "project",
       "beads_status": "available",
       "task_count": 3
     },
     {
       "name": "lab-notes",
-      "root": "/workspace/lab-notes",
+      "root": "/home/galeavenworth/lab/lab-notes",
       "workspace_role": "project",
       "beads_status": "missing",
       "task_count": 0
@@ -31,7 +31,7 @@
       "title": "active implementation",
       "status": "in_progress",
       "workspace": "codex-mesh",
-      "workspace_root": "/workspace/codex-mesh",
+      "workspace_root": "/home/galeavenworth/lab/codex-mesh",
       "beads_status": "available",
       "priority": 3,
       "issue_type": "task",
@@ -45,7 +45,7 @@
       "title": "quiet reviewer",
       "status": "open",
       "workspace": "codex-mesh",
-      "workspace_root": "/workspace/codex-mesh",
+      "workspace_root": "/home/galeavenworth/lab/codex-mesh",
       "beads_status": "available",
       "priority": 3,
       "issue_type": "task",
@@ -58,7 +58,7 @@
       "title": "detached hooked task",
       "status": "hooked",
       "workspace": "codex-mesh",
-      "workspace_root": "/workspace/codex-mesh",
+      "workspace_root": "/home/galeavenworth/lab/codex-mesh",
       "beads_status": "available",
       "priority": 3,
       "issue_type": "task",

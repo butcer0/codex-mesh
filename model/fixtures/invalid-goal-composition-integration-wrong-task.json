@@ -1,0 +1,47 @@
+{
+  "record_type": "goal_composition",
+  "parent_task": "mesh-mol-parent",
+  "composition_source": "bd-formula",
+  "close_policy": "children-green-integration-green-and-result-envelope",
+  "formula": "cue-first-feature",
+  "integration_predicate": {
+    "record_type": "goal_predicate",
+    "task": "mesh-mol-child",
+    "description": "Invalid because the integration predicate is attached to a child task.",
+    "frozen": true,
+    "red_check_required": true,
+    "close_requires_green": true,
+    "check": {
+      "kind": "command",
+      "cwd": "/home/galeavenworth/lab/codex-mesh",
+      "command": ["true"],
+      "expected_exit_code": 0,
+      "side_effect_free": true
+    },
+    "adversarial": [
+      {
+        "label": "wrong-task",
+        "reason": "The integration predicate must be attached to the parent task.",
+        "expected_status": "red"
+      }
+    ],
+    "integration_scope": "formula",
+    "composition_source": "bd-formula",
+    "proof_obligations": ["parent-predicate-distinct", "formula-step-ordering"],
+    "evidence_commands": [
+      {
+        "purpose": "parent-integration-evaluation",
+        "primitive": "mesh goal check --phase close <predicate>",
+        "command": "mesh goal check --phase close /tmp/parent.json",
+        "side_effect_free": true,
+        "required": true,
+        "output_format": "json",
+        "exit_code": 0
+      }
+    ]
+  },
+  "child_tasks": ["mesh-mol-child"],
+  "child_predicates": [],
+  "required_child_closes": [],
+  "evidence_commands": []
+}

@@ -11,6 +11,7 @@ import time
 
 BEADS_ISSUE_RE = re.compile(r"^[a-z][a-z0-9]*-[a-z0-9]+(-[a-z0-9]+)*(\.[0-9]+)*$")
 ADDR_RE = re.compile(r"^[a-z][a-z0-9-]{1,63}$")
+COOKBOOK_ROLES = ("implementation", "reviewer", "judge", "probe")
 FRONTIER_COMMAND = "bd ready --parent <epic> --exclude-type epic --json"
 
 
@@ -42,6 +43,12 @@ def validate_issue_id(value, field):
 def validate_address(value, field):
     if not isinstance(value, str) or not ADDR_RE.match(value):
         die(f"{field} must be a codex-mesh address")
+    return value
+
+
+def validate_abs_path(value, field):
+    if not isinstance(value, str) or not os.path.isabs(value):
+        die(f"{field} must be an absolute path")
     return value
 
 
@@ -93,6 +100,18 @@ def validate_request(request):
     if request["mutating"] and mode != "worktree":
         die("mutating wave requests require worktree isolation")
     request["isolation"] = isolation
+    cookbook = request.get("cookbook")
+    if cookbook is not None:
+        if not isinstance(cookbook, dict):
+            die("request.cookbook must be an object")
+        validate_abs_path(cookbook.get("path"), "request.cookbook.path")
+        cookbook_role = cookbook.get("role")
+        if cookbook_role not in COOKBOOK_ROLES:
+            die("request.cookbook.role must be a cookbook role")
+        if cookbook_role != role:
+            die("request.cookbook.role must match request.role")
+        if "predicate_dir" in cookbook:
+            validate_abs_path(cookbook.get("predicate_dir"), "request.cookbook.predicate_dir")
     return request
 
 
@@ -156,6 +175,54 @@ def render_message(template, request, task):
     )
 
 
+def render_cookbook_message(request, task):
+    cookbook = request.get("cookbook")
+    if not cookbook:
+        return render_message(request["message_template"], request, task), None
+    cmd = [
+        os.path.join(script_dir(), "codex-mesh-cookbook"),
+        "render",
+        "--json",
+        "--cookbook",
+        cookbook["path"],
+        "--role",
+        cookbook["role"],
+        "--task",
+        task["id"],
+        "--title",
+        task["title"],
+    ]
+    predicate_dir = cookbook.get("predicate_dir")
+    if predicate_dir:
+        predicate_path = os.path.join(predicate_dir, f"{task['id']}.json")
+        if not os.path.exists(predicate_path):
+            die(f"request.cookbook.predicate_dir missing task predicate: {predicate_path}")
+        cmd.extend(["--predicate", predicate_path])
+    completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
+    if completed.returncode != 0:
+        die(completed.stderr.strip() or "cookbook render failed")
+    try:
+        rendered = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        die(f"cookbook renderer emitted invalid JSON: {exc}")
+    message = rendered.get("message")
+    if not isinstance(message, str) or not message.startswith("/goal "):
+        die("cookbook renderer emitted a non-goal message")
+    evidence = {
+        "record_type": "cookbook_dispatch_evidence",
+        "renderer": "context-cookbook-renderer",
+        "rendered_record_type": rendered.get("record_type"),
+        "cookbook_path": cookbook["path"],
+        "cookbook_id": rendered.get("cookbook_id"),
+        "parent_task": rendered.get("parent_task"),
+        "role": rendered.get("role"),
+        "task": rendered.get("task"),
+        "source_reads_only_before_dispatch": True,
+        "preserve_transport_semantics": True,
+    }
+    return message, evidence
+
+
 def parse_key_values(output):
     values = {}
     for line in output.splitlines():
@@ -165,7 +232,7 @@ def parse_key_values(output):
     return values
 
 
-def spawn_task(request, task, address, message):
+def spawn_task(request, task, address, message, cookbook_evidence=None):
     cmd = [
         os.path.join(script_dir(), "spawn"),
         "--addr",
@@ -185,7 +252,7 @@ def spawn_task(request, task, address, message):
     ])
     completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
     if completed.returncode != 0:
-        return {
+        record = {
             "record_type": "dispatch_record",
             "task": task["id"],
             "address": address,
@@ -194,6 +261,9 @@ def spawn_task(request, task, address, message):
             "reason": "spawn-failed",
             "message": message,
         }
+        if cookbook_evidence:
+            record["cookbook"] = cookbook_evidence
+        return record
     values = parse_key_values(completed.stdout)
     record = {
         "record_type": "dispatch_record",
@@ -204,6 +274,8 @@ def spawn_task(request, task, address, message):
         "message": message,
         "session_id": values.get("codex_session") or values.get("window_id"),
     }
+    if cookbook_evidence:
+        record["cookbook"] = cookbook_evidence
     if values.get("codex_transcript"):
         record["transcript_path"] = values["codex_transcript"]
         record["attachment"] = {
@@ -224,7 +296,7 @@ def spawn_task(request, task, address, message):
 
 def plan_or_dispatch(args, request, task, index):
     address = address_for(request["address_prefix"], task["id"])
-    message = render_message(request["message_template"], request, task)
+    message, cookbook_evidence = render_cookbook_message(request, task)
     worktree_path = None
     if request["isolation"]["mode"] == "worktree":
         worktree_path = os.path.join(request["isolation"]["worktree_base"].rstrip("/"), address)
@@ -240,8 +312,10 @@ def plan_or_dispatch(args, request, task, index):
         }
         if worktree_path:
             record["worktree_path"] = worktree_path
+        if cookbook_evidence:
+            record["cookbook"] = cookbook_evidence
         return record
-    return spawn_task(request, task, address, message)
+    return spawn_task(request, task, address, message, cookbook_evidence)
 
 
 def build_status(args, request, frontier, source):
