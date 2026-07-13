@@ -102,3 +102,17 @@ make verify
 
 This checks the CUE contract, valid and adversarial fixtures, command help,
 formula dry-runs, and offline command behavior.
+
+The same checks can be run by tier:
+
+```sh
+make verify-contract
+make verify-offline
+make verify-runtime
+```
+
+`verify-contract` runs CUE contract and fail-closed fixture checks.
+`verify-offline` runs fixture-driven command behavior without live terminal
+launches. `verify-runtime` runs repo-owned Beads formula dry-runs and command
+surface checks. It must not depend on maintainer-local Beads issue or molecule
+ids that are not tracked in this checkout.

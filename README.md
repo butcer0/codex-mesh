@@ -267,6 +267,15 @@ fixtures to pass and adversarial fixtures to fail closed:
 ./scripts/verify.sh
 ```
 
+Contributor verification is also split into tiers:
+
+```sh
+make verify-contract  # CUE contract and fail-closed fixture checks
+make verify-offline   # fixture-driven command behavior without live launches
+make verify-runtime   # repo-owned Beads formula dry-runs and command checks
+make verify           # all tiers
+```
+
 ## Current Backend
 
 The first backend is kitty remote control:
