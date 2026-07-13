@@ -267,6 +267,9 @@ fixtures to pass and adversarial fixtures to fail closed:
 ./scripts/verify.sh
 ```
 
+For the current local trust assumptions and safety boundaries, see
+[Threat Model and Safety Boundaries](docs/threat-model.md).
+
 ## Current Backend
 
 The first backend is kitty remote control:
