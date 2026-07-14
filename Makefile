@@ -9,21 +9,41 @@ SKILL_NAME := codex-mesh
 SKILL_SRC := $(ROOT)/skills/$(SKILL_NAME)
 SKILL_DEST := $(SKILLS_DIR)/$(SKILL_NAME)
 
-.PHONY: doctor verify check-deps check-runtime-deps check-verify-deps install install-bin install-skill uninstall
+.PHONY: doctor verify verify-contract verify-offline verify-runtime check-deps check-runtime-deps check-verify-deps check-verify-contract-deps check-verify-offline-deps check-verify-runtime-deps install install-bin install-skill uninstall
 
 doctor:
 	@./scripts/mesh doctor
 
-verify: check-verify-deps
-	./scripts/verify.sh
+verify: verify-contract verify-offline verify-runtime
+
+verify-contract: check-verify-contract-deps
+	./scripts/verify-contract.sh
+
+verify-offline: check-verify-offline-deps
+	./scripts/verify-offline.sh
+
+verify-runtime: check-verify-runtime-deps
+	./scripts/verify-runtime.sh
+
+check-verify-contract-deps:
+	@for cmd in bash cue; do \
+		command -v "$$cmd" >/dev/null 2>&1 || { echo "missing verify-contract dependency: $$cmd" >&2; exit 1; }; \
+	done
+
+check-verify-offline-deps:
+	@for cmd in bash python3 jq git cue; do \
+		command -v "$$cmd" >/dev/null 2>&1 || { echo "missing verify-offline dependency: $$cmd" >&2; exit 1; }; \
+	done
+
+check-verify-runtime-deps:
+	@for cmd in bash cue jq bd; do \
+		command -v "$$cmd" >/dev/null 2>&1 || { echo "missing verify-runtime dependency: $$cmd" >&2; exit 1; }; \
+	done
+
+check-verify-deps: check-verify-contract-deps check-verify-offline-deps check-verify-runtime-deps
 
 check-runtime-deps:
 	@for cmd in bash python3 jq git bd kitty codex; do \
-		command -v "$$cmd" >/dev/null 2>&1 || { echo "missing dependency: $$cmd" >&2; exit 1; }; \
-	done
-
-check-verify-deps:
-	@for cmd in bash python3 jq git cue bd; do \
 		command -v "$$cmd" >/dev/null 2>&1 || { echo "missing dependency: $$cmd" >&2; exit 1; }; \
 	done
 
