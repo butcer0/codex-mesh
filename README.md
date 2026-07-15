@@ -92,6 +92,9 @@ mesh workflow run model/fixtures/valid-workflow-request-review-wave.json
 mesh workflow status model/fixtures/valid-workflow-request-review-wave.json
 ```
 
+For the evidence path from formula step to result envelope and close decision,
+see [Workflow Evidence Lifecycle](docs/workflow-evidence-lifecycle.md).
+
 In this first runtime, `run` is still bounded and dry-run: it emits decisions
 instead of launching hidden workers or mutating Beads. A decision must name the
 target repo, Beads task id, role, cwd/placement key, isolation mode,
